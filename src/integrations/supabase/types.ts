@@ -14,7 +14,316 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      anon_posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          downvotes: number | null
+          id: string
+          upvotes: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          downvotes?: number | null
+          id?: string
+          upvotes?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          downvotes?: number | null
+          id?: string
+          upvotes?: number | null
+        }
+        Relationships: []
+      }
+      anon_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anon_votes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "anon_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anon_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_members: {
+        Row: {
+          club_id: string
+          id: string
+          joined_at: string | null
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          id?: string
+          joined_at?: string | null
+          role?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          id?: string
+          joined_at?: string | null
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_members_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clubs: {
+        Row: {
+          avatar_url: string | null
+          category: string | null
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clubs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connections: {
+        Row: {
+          connection_type: string
+          created_at: string | null
+          id: string
+          receiver_id: string
+          requester_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          connection_type?: string
+          created_at?: string | null
+          id?: string
+          receiver_id: string
+          requester_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          connection_type?: string
+          created_at?: string | null
+          id?: string
+          receiver_id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connections_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connections_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          connection_id: string
+          content: string
+          created_at: string | null
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          connection_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          connection_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string
+          id: string
+          is_admin_post: boolean | null
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by: string
+          id?: string
+          is_admin_post?: boolean | null
+          title: string
+          type?: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          is_admin_post?: boolean | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          department: string | null
+          email: string
+          full_name: string | null
+          id: string
+          interests: string[] | null
+          updated_at: string | null
+          year_of_study: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          department?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          interests?: string[] | null
+          updated_at?: string | null
+          year_of_study?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          department?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          interests?: string[] | null
+          updated_at?: string | null
+          year_of_study?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
