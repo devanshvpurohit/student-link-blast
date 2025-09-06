@@ -64,14 +64,22 @@ const Connect = () => {
       .from('connections')
       .select(`
         *,
-        profiles!connections_receiver_id_fkey(*)
+        requester:profiles!connections_requester_id_fkey(*),
+        receiver:profiles!connections_receiver_id_fkey(*)
       `)
       .or(`requester_id.eq.${user?.id},receiver_id.eq.${user?.id}`);
 
     if (error) {
       console.error('Error fetching connections:', error);
     } else {
-      setConnections(data || []);
+      // Transform data to include the correct profile info
+      const transformedData = (data || []).map(connection => ({
+        ...connection,
+        profiles: connection.requester_id === user?.id 
+          ? connection.receiver 
+          : connection.requester
+      }));
+      setConnections(transformedData);
     }
   };
 
@@ -284,9 +292,7 @@ const Connect = () => {
         <TabsContent value="connections">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myConnections.map((connection) => {
-              const otherProfile = connection.receiver_id === user?.id 
-                ? connection.profiles 
-                : connection.profiles;
+              const otherProfile = connection.profiles;
               
               return (
                 <Card key={connection.id}>

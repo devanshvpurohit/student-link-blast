@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Calendar, Megaphone, Newspaper } from 'lucide-react';
+import { Plus, Calendar, Megaphone, Newspaper, Image, Trash2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +20,8 @@ interface Post {
   type: 'news' | 'event' | 'announcement' | 'general';
   is_admin_post: boolean;
   created_at: string;
+  created_by: string;
+  image_url?: string;
   profiles: {
     full_name: string;
     avatar_url?: string;
@@ -32,6 +34,10 @@ const Pulse = () => {
   const [content, setContent] = useState('');
   const [type, setType] = useState<'news' | 'event' | 'announcement' | 'general'>('general');
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -59,6 +65,30 @@ const Pulse = () => {
     }
   };
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
+
+    const { data, error } = await supabase.storage
+      .from('post-images')
+      .upload(fileName, file);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('post-images')
+      .getPublicUrl(data.path);
+
+    return publicUrl;
+  };
+
   const createPost = async () => {
     if (!title.trim() || !content.trim()) {
       toast({
@@ -69,6 +99,17 @@ const Pulse = () => {
       return;
     }
 
+    setIsUploading(true);
+
+    let imageUrl = null;
+    if (selectedImage) {
+      imageUrl = await uploadImage(selectedImage);
+      if (!imageUrl) {
+        setIsUploading(false);
+        return;
+      }
+    }
+
     const { error } = await supabase
       .from('posts')
       .insert({
@@ -76,6 +117,7 @@ const Pulse = () => {
         content: content.trim(),
         type,
         created_by: user?.id,
+        image_url: imageUrl,
       });
 
     if (error) {
@@ -92,8 +134,63 @@ const Pulse = () => {
       setTitle('');
       setContent('');
       setType('general');
+      setSelectedImage(null);
+      setImagePreview(null);
       setIsOpen(false);
       fetchPosts();
+    }
+
+    setIsUploading(false);
+  };
+
+  const deletePost = async (postId: string, imageUrl?: string) => {
+    // Delete image from storage if exists
+    if (imageUrl) {
+      const imagePath = imageUrl.split('/').pop();
+      if (imagePath) {
+        await supabase.storage
+          .from('post-images')
+          .remove([`${user?.id}/${imagePath}`]);
+      }
+    }
+
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete post",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Post deleted successfully!",
+      });
+      fetchPosts();
+    }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -163,9 +260,51 @@ const Pulse = () => {
                     rows={4}
                   />
                 </div>
+
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="gap-2"
+                  >
+                    <Image className="h-4 w-4" />
+                    Add Image
+                  </Button>
+                  
+                  {imagePreview && (
+                    <div className="mt-2 relative">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-h-48 rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={removeImage}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 
-                <Button onClick={createPost} className="w-full">
-                  Publish Post
+                <Button 
+                  onClick={createPost} 
+                  className="w-full" 
+                  disabled={isUploading}
+                >
+                  {isUploading ? 'Publishing...' : 'Publish Post'}
                 </Button>
               </div>
             </DialogContent>
@@ -194,6 +333,16 @@ const Pulse = () => {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                  {post.created_by === user?.id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deletePost(post.id, post.image_url)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                   {post.is_admin_post && (
                     <Badge variant="destructive">Admin</Badge>
                   )}
@@ -209,6 +358,15 @@ const Pulse = () => {
             
             <CardContent>
               <p className="text-muted-foreground whitespace-pre-wrap">{post.content}</p>
+              {post.image_url && (
+                <div className="mt-4">
+                  <img
+                    src={post.image_url}
+                    alt="Post image"
+                    className="max-w-full h-auto rounded-lg"
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

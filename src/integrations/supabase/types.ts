@@ -250,6 +250,7 @@ export type Database = {
           created_at: string | null
           created_by: string
           id: string
+          image_url: string | null
           is_admin_post: boolean | null
           title: string
           type: string
@@ -260,6 +261,7 @@ export type Database = {
           created_at?: string | null
           created_by: string
           id?: string
+          image_url?: string | null
           is_admin_post?: boolean | null
           title: string
           type?: string
@@ -270,6 +272,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string
           id?: string
+          image_url?: string | null
           is_admin_post?: boolean | null
           title?: string
           type?: string
