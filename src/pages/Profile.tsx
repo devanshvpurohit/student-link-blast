@@ -1,0 +1,363 @@
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Camera, User, Save, Plus, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+
+interface Profile {
+  id: string;
+  full_name: string;
+  email: string;
+  avatar_url?: string;
+  department?: string;
+  bio?: string;
+  year_of_study?: number;
+  interests?: string[];
+}
+
+const Profile = () => {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<Partial<Profile>>({});
+  const [newInterest, setNewInterest] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user?.id)
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load profile",
+        variant: "destructive",
+      });
+    } else {
+      setProfile(data);
+      setEditedProfile(data);
+    }
+  };
+
+  const handleSave = async () => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: editedProfile.full_name,
+        department: editedProfile.department,
+        bio: editedProfile.bio,
+        year_of_study: editedProfile.year_of_study,
+        interests: editedProfile.interests,
+      })
+      .eq('id', user?.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Profile updated successfully!",
+      });
+      setProfile({ ...profile!, ...editedProfile });
+      setIsEditing(false);
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user?.id}-${Math.random()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('post-images')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      toast({
+        title: "Error",
+        description: "Failed to upload avatar",
+        variant: "destructive",
+      });
+      setUploading(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('post-images')
+      .getPublicUrl(fileName);
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl })
+      .eq('id', user?.id);
+
+    if (updateError) {
+      toast({
+        title: "Error",
+        description: "Failed to update avatar",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Avatar updated successfully!",
+      });
+      setProfile({ ...profile!, avatar_url: publicUrl });
+      setEditedProfile({ ...editedProfile, avatar_url: publicUrl });
+    }
+    
+    setUploading(false);
+  };
+
+  const addInterest = () => {
+    if (newInterest.trim()) {
+      const updatedInterests = [...(editedProfile.interests || []), newInterest.trim()];
+      setEditedProfile({ ...editedProfile, interests: updatedInterests });
+      setNewInterest('');
+    }
+  };
+
+  const removeInterest = (index: number) => {
+    const updatedInterests = editedProfile.interests?.filter((_, i) => i !== index) || [];
+    setEditedProfile({ ...editedProfile, interests: updatedInterests });
+  };
+
+  if (!profile) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">My Profile</h1>
+        {!isEditing ? (
+          <Button onClick={() => setIsEditing(true)} className="gap-2">
+            <User className="h-4 w-4" />
+            Edit Profile
+          </Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button onClick={handleSave} className="gap-2">
+              <Save className="h-4 w-4" />
+              Save
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsEditing(false);
+                setEditedProfile(profile);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Profile Picture & Basic Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile Picture</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <div className="relative mx-auto w-32 h-32">
+              <Avatar className="w-32 h-32">
+                <AvatarImage src={profile.avatar_url} />
+                <AvatarFallback className="text-2xl">
+                  {profile.full_name?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              {isEditing && (
+                <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
+                  <Camera className="h-4 w-4" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </label>
+              )}
+            </div>
+            {uploading && (
+              <p className="text-sm text-muted-foreground">Uploading...</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Basic Information */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Basic Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Full Name</label>
+                {isEditing ? (
+                  <Input
+                    value={editedProfile.full_name || ''}
+                    onChange={(e) => setEditedProfile({ ...editedProfile, full_name: e.target.value })}
+                    placeholder="Enter your full name"
+                  />
+                ) : (
+                  <p className="text-muted-foreground">{profile.full_name || 'Not set'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Email</label>
+                <p className="text-muted-foreground">{profile.email}</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Department</label>
+                {isEditing ? (
+                  <Select
+                    value={editedProfile.department || ''}
+                    onValueChange={(value) => setEditedProfile({ ...editedProfile, department: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="computer-science">Computer Science</SelectItem>
+                      <SelectItem value="engineering">Engineering</SelectItem>
+                      <SelectItem value="business">Business</SelectItem>
+                      <SelectItem value="arts">Arts</SelectItem>
+                      <SelectItem value="sciences">Sciences</SelectItem>
+                      <SelectItem value="medicine">Medicine</SelectItem>
+                      <SelectItem value="law">Law</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-muted-foreground">{profile.department || 'Not set'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Year of Study</label>
+                {isEditing ? (
+                  <Select
+                    value={editedProfile.year_of_study?.toString() || ''}
+                    onValueChange={(value) => setEditedProfile({ ...editedProfile, year_of_study: parseInt(value) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1st Year</SelectItem>
+                      <SelectItem value="2">2nd Year</SelectItem>
+                      <SelectItem value="3">3rd Year</SelectItem>
+                      <SelectItem value="4">4th Year</SelectItem>
+                      <SelectItem value="5">5th Year</SelectItem>
+                      <SelectItem value="6">Graduate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-muted-foreground">
+                    {profile.year_of_study ? `${profile.year_of_study}${profile.year_of_study === 1 ? 'st' : profile.year_of_study === 2 ? 'nd' : profile.year_of_study === 3 ? 'rd' : 'th'} Year` : 'Not set'}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Bio</label>
+              {isEditing ? (
+                <Textarea
+                  value={editedProfile.bio || ''}
+                  onChange={(e) => setEditedProfile({ ...editedProfile, bio: e.target.value })}
+                  placeholder="Tell us about yourself..."
+                  rows={3}
+                />
+              ) : (
+                <p className="text-muted-foreground">{profile.bio || 'No bio added yet'}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Interests */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Interests</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {(editedProfile.interests || []).map((interest, index) => (
+                <Badge key={index} variant="secondary" className="gap-1">
+                  {interest}
+                  {isEditing && (
+                    <button
+                      onClick={() => removeInterest(index)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </Badge>
+              ))}
+            </div>
+            
+            {isEditing && (
+              <div className="flex gap-2">
+                <Input
+                  value={newInterest}
+                  onChange={(e) => setNewInterest(e.target.value)}
+                  placeholder="Add an interest..."
+                  onKeyPress={(e) => e.key === 'Enter' && addInterest()}
+                />
+                <Button onClick={addInterest} size="sm" className="gap-1">
+                  <Plus className="h-4 w-4" />
+                  Add
+                </Button>
+              </div>
+            )}
+            
+            {(!editedProfile.interests || editedProfile.interests.length === 0) && !isEditing && (
+              <p className="text-muted-foreground">No interests added yet</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;

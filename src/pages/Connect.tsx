@@ -43,10 +43,21 @@ const Connect = () => {
   }, [user]);
 
   const fetchProfiles = async () => {
+    // Get all existing connections to filter out already connected users
+    const { data: existingConnections } = await supabase
+      .from('connections')
+      .select('requester_id, receiver_id')
+      .or(`requester_id.eq.${user?.id},receiver_id.eq.${user?.id}`);
+
+    const connectedUserIds = new Set(
+      existingConnections?.flatMap(conn => [conn.requester_id, conn.receiver_id]) || []
+    );
+    connectedUserIds.add(user?.id!); // Exclude current user
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .neq('id', user?.id);
+      .not('id', 'in', `(${Array.from(connectedUserIds).join(',')})`);
 
     if (error) {
       toast({

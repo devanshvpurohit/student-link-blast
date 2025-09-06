@@ -171,7 +171,7 @@ const Index = () => {
           <p className="text-muted-foreground mb-4">
             Complete your profile and start connecting with your campus community.
           </p>
-          <Button size="lg" className="gap-2">
+          <Button size="lg" className="gap-2" onClick={() => window.location.href = '/profile'}>
             Complete Profile <ArrowRight className="h-4 w-4" />
           </Button>
         </CardContent>

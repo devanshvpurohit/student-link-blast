@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Users, MessageSquare, Bell, Hash, Calendar } from 'lucide-react';
+import { Users, MessageSquare, Bell, Hash, Calendar, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -19,6 +19,7 @@ const Layout = ({ children }: LayoutProps) => {
     { icon: Hash, label: 'AnonySpace', path: '/anonyspace' },
     { icon: Calendar, label: 'ClubVerse', path: '/clubverse' },
     { icon: MessageSquare, label: 'Messages', path: '/messages' },
+    { icon: User, label: 'Profile', path: '/profile' },
   ];
 
   return (
