@@ -247,6 +247,8 @@ export type Database = {
           created_at: string | null
           id: string
           sender_id: string
+          voice_note_duration: number | null
+          voice_note_url: string | null
         }
         Insert: {
           connection_id: string
@@ -254,6 +256,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           sender_id: string
+          voice_note_duration?: number | null
+          voice_note_url?: string | null
         }
         Update: {
           connection_id?: string
@@ -261,6 +265,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           sender_id?: string
+          voice_note_duration?: number | null
+          voice_note_url?: string | null
         }
         Relationships: [
           {

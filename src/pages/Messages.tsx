@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { VoiceNoteRecorder } from '@/components/VoiceNoteRecorder';
+import { VoiceNotePlayer } from '@/components/VoiceNotePlayer';
 
 interface Connection {
   id: string;
@@ -25,6 +27,7 @@ interface Connection {
     content: string;
     created_at: string;
     sender_id: string;
+    voice_note_url?: string;
   };
 }
 
@@ -33,6 +36,8 @@ interface Message {
   content: string;
   sender_id: string;
   created_at: string;
+  voice_note_url?: string;
+  voice_note_duration?: number;
   profiles: {
     full_name: string;
     avatar_url?: string;
@@ -45,6 +50,7 @@ const Messages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -106,7 +112,7 @@ const Messages = () => {
       (data || []).map(async (connection) => {
         const { data: lastMessage } = await supabase
           .from('messages')
-          .select('content, created_at, sender_id')
+          .select('content, created_at, sender_id, voice_note_url')
           .eq('connection_id', connection.id)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -183,6 +189,59 @@ const Messages = () => {
     }
   };
 
+  const handleSendVoiceNote = async (audioBlob: Blob, duration: number) => {
+    if (!selectedConnection || !user) return;
+
+    setLoading(true);
+
+    try {
+      // Upload voice note to storage
+      const fileName = `${user.id}/${Date.now()}.webm`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('voice-notes')
+        .upload(fileName, audioBlob);
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('voice-notes')
+        .getPublicUrl(uploadData.path);
+
+      // Insert message with voice note URL
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          connection_id: selectedConnection.id,
+          sender_id: user.id,
+          content: '', // Empty content for voice messages
+          voice_note_url: urlData.publicUrl,
+          voice_note_duration: duration,
+        });
+
+      if (messageError) throw messageError;
+
+      fetchMessages(selectedConnection.id);
+      fetchConnections();
+      setShowVoiceRecorder(false);
+      
+      toast({
+        title: "Voice message sent",
+        description: "Your voice message has been sent successfully",
+      });
+      
+    } catch (error) {
+      console.error('Error sending voice note:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send voice message",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="h-screen flex">
       {/* Connections Sidebar */}
@@ -223,7 +282,7 @@ const Messages = () => {
                       <div className="text-sm text-muted-foreground">
                         <p className="truncate">
                           {connection.last_message.sender_id === user?.id && 'You: '}
-                          {connection.last_message.content}
+                          {connection.last_message.voice_note_url ? '🎤 Voice message' : connection.last_message.content}
                         </p>
                         <p className="text-xs">
                           {formatDistanceToNow(new Date(connection.last_message.created_at), { addSuffix: true })}
@@ -280,7 +339,14 @@ const Messages = () => {
                         </Avatar>
                         
                         <div className={`rounded-lg p-3 ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                          <p className="whitespace-pre-wrap">{message.content}</p>
+                          {message.voice_note_url ? (
+                            <VoiceNotePlayer 
+                              audioUrl={message.voice_note_url} 
+                              duration={message.voice_note_duration}
+                            />
+                          ) : (
+                            <p className="whitespace-pre-wrap">{message.content}</p>
+                          )}
                           <p className={`text-xs mt-1 ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                             {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                           </p>
@@ -294,18 +360,28 @@ const Messages = () => {
 
             {/* Message Input */}
             <div className="p-4 border-t bg-card">
-              <div className="flex space-x-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type a message..."
-                  disabled={loading}
+              {showVoiceRecorder ? (
+                <VoiceNoteRecorder
+                  onSendVoiceNote={handleSendVoiceNote}
+                  onCancel={() => setShowVoiceRecorder(false)}
                 />
-                <Button onClick={sendMessage} disabled={loading || !newMessage.trim()}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
+              ) : (
+                <div className="flex space-x-2">
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type a message..."
+                    disabled={loading}
+                  />
+                  <VoiceNoteRecorder
+                    onSendVoiceNote={handleSendVoiceNote}
+                  />
+                  <Button onClick={sendMessage} disabled={loading || !newMessage.trim()}>
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </>
         ) : (
