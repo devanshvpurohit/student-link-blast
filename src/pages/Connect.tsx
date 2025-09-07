@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Users, Briefcase } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Heart, Users, Briefcase, Search, UserX, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -30,8 +31,10 @@ interface Connection {
 
 const Connect = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [connectionType, setConnectionType] = useState<'friend' | 'dating' | 'networking'>('friend');
+  const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -67,6 +70,7 @@ const Connect = () => {
       });
     } else {
       setProfiles(data || []);
+      setFilteredProfiles(data || []);
     }
   };
 
@@ -115,6 +119,29 @@ const Connect = () => {
         description: "Connection request sent!",
       });
       fetchConnections();
+      fetchProfiles(); // Refresh profiles to remove newly connected user
+    }
+  };
+
+  const removeConnection = async (connectionId: string) => {
+    const { error } = await supabase
+      .from('connections')
+      .delete()
+      .eq('id', connectionId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to remove connection",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Connection removed",
+      });
+      fetchConnections();
+      fetchProfiles(); // Refresh profiles
     }
   };
 
@@ -136,8 +163,26 @@ const Connect = () => {
         description: `Connection ${status}!`,
       });
       fetchConnections();
+      fetchProfiles(); // Refresh profiles
     }
   };
+
+  // Filter profiles based on search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredProfiles(profiles);
+    } else {
+      const filtered = profiles.filter(profile =>
+        profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profile.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profile.bio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profile.interests?.some(interest => 
+          interest.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+      setFilteredProfiles(filtered);
+    }
+  }, [searchTerm, profiles]);
 
   const getConnectionIcon = (type: string) => {
     switch (type) {
@@ -149,6 +194,10 @@ const Connect = () => {
 
   const pendingRequests = connections.filter(c => 
     c.receiver_id === user?.id && c.status === 'pending'
+  );
+
+  const sentRequests = connections.filter(c => 
+    c.requester_id === user?.id && c.status === 'pending'
   );
 
   const myConnections = connections.filter(c => c.status === 'accepted');
@@ -163,6 +212,11 @@ const Connect = () => {
           <TabsTrigger value="requests">
             Requests {pendingRequests.length > 0 && (
               <Badge variant="destructive" className="ml-2">{pendingRequests.length}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="sent">
+            Sent {sentRequests.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{sentRequests.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="connections">My Connections</TabsTrigger>
@@ -300,6 +354,40 @@ const Connect = () => {
           </div>
         </TabsContent>
 
+        <TabsContent value="sent">
+          <div className="space-y-4">
+            {sentRequests.map((request) => (
+              <Card key={request.id}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarImage src={request.profiles.avatar_url} />
+                        <AvatarFallback>
+                          {request.profiles.full_name?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold">{request.profiles.full_name}</h3>
+                        <div className="flex items-center gap-2">
+                          {getConnectionIcon(request.connection_type)}
+                          <span className="text-sm text-muted-foreground capitalize">
+                            {request.connection_type} request sent
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Badge variant="outline">Pending</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {sentRequests.length === 0 && (
+              <p className="text-center text-muted-foreground">No pending requests sent</p>
+            )}
+          </div>
+        </TabsContent>
+
         <TabsContent value="connections">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myConnections.map((connection) => {
@@ -315,7 +403,7 @@ const Connect = () => {
                           {otherProfile.full_name?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="font-semibold">{otherProfile.full_name}</h3>
                         <div className="flex items-center gap-2">
                           {getConnectionIcon(connection.connection_type)}
@@ -323,6 +411,19 @@ const Connect = () => {
                             {connection.connection_type}
                           </span>
                         </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => removeConnection(connection.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <UserX className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

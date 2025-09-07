@@ -14,10 +14,43 @@ export type Database = {
   }
   public: {
     Tables: {
+      anon_post_reports: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reason: string
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reason: string
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reason?: string
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anon_post_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "anon_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       anon_posts: {
         Row: {
           content: string
           created_at: string | null
+          deleted_at: string | null
           downvotes: number | null
           id: string
           upvotes: number | null
@@ -25,6 +58,7 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string | null
+          deleted_at?: string | null
           downvotes?: number | null
           id?: string
           upvotes?: number | null
@@ -32,6 +66,7 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string | null
+          deleted_at?: string | null
           downvotes?: number | null
           id?: string
           upvotes?: number | null

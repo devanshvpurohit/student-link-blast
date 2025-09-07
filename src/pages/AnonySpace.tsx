@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowUp, ArrowDown, Plus, MessageCircle } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowUp, ArrowDown, Plus, MessageCircle, Flag, MoreHorizontal } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +25,9 @@ const AnonySpace = () => {
   const [posts, setPosts] = useState<AnonPost[]>([]);
   const [content, setContent] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [reportReason, setReportReason] = useState('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -164,6 +169,50 @@ const AnonySpace = () => {
     fetchPosts();
   };
 
+  const reportPost = async () => {
+    if (!selectedPostId || !reportReason.trim()) {
+      toast({
+        title: "Error",
+        description: "Please select a reason for reporting",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Please sign in to report posts",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('anon_post_reports')
+      .insert({
+        post_id: selectedPostId,
+        reporter_id: user.id,
+        reason: reportReason,
+      });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to report post",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Post reported successfully. Our team will review it.",
+      });
+      setReportDialogOpen(false);
+      setSelectedPostId(null);
+      setReportReason('');
+    }
+  };
+
   const getNetScore = (upvotes: number, downvotes: number) => {
     return upvotes - downvotes;
   };
@@ -251,11 +300,35 @@ const AnonySpace = () => {
 
                   {/* Content Section */}
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge variant="secondary">Anonymous</Badge>
-                      <span className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                      </span>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">Anonymous</Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                      
+                      {user && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedPostId(post.id);
+                                setReportDialogOpen(true);
+                              }}
+                              className="text-red-600"
+                            >
+                              <Flag className="h-4 w-4 mr-2" />
+                              Report Post
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                     
                     <p className="text-foreground whitespace-pre-wrap leading-relaxed">
@@ -277,6 +350,55 @@ const AnonySpace = () => {
           </Card>
         )}
       </div>
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Post</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Reason for reporting:</label>
+              <Select value={reportReason} onValueChange={setReportReason}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select a reason" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spam">Spam</SelectItem>
+                  <SelectItem value="harassment">Harassment</SelectItem>
+                  <SelectItem value="hate_speech">Hate Speech</SelectItem>
+                  <SelectItem value="inappropriate">Inappropriate Content</SelectItem>
+                  <SelectItem value="misinformation">Misinformation</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
+              <p>🔒 Reports are reviewed by our moderation team. False reports may result in account restrictions.</p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                onClick={reportPost} 
+                disabled={!reportReason}
+                variant="destructive"
+                className="flex-1"
+              >
+                Report Post
+              </Button>
+              <Button 
+                onClick={() => setReportDialogOpen(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
