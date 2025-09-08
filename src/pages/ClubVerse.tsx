@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Users, Crown, User, Lock, Globe } from 'lucide-react';
+import { Plus, Users, Crown, User, Lock, Globe, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import ClubChat from '@/components/ClubChat';
 
 interface Club {
   id: string;
@@ -48,6 +49,8 @@ const ClubVerse = () => {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
+  const [showChat, setShowChat] = useState(false);
+  const [selectedChatClub, setSelectedChatClub] = useState<Club | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const { user } = useAuth();
@@ -256,6 +259,11 @@ const ClubVerse = () => {
     setIsDetailOpen(true);
   };
 
+  const openChat = (club: Club) => {
+    setSelectedChatClub(club);
+    setShowChat(true);
+  };
+
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'admin': return <Crown className="h-4 w-4 text-yellow-500" />;
@@ -394,6 +402,18 @@ const ClubVerse = () => {
                         View
                       </Button>
                       
+                      {club.user_membership?.status === 'approved' && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => openChat(club)}
+                          className="gap-2"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          Chat
+                        </Button>
+                      )}
+                      
                       {!club.user_membership && (
                         <Button 
                           size="sm"
@@ -409,7 +429,7 @@ const ClubVerse = () => {
                         </Button>
                       )}
                       
-                      {club.user_membership?.status === 'approved' && (
+                      {club.user_membership?.status === 'approved' && !club.user_membership && (
                         <Button size="sm" variant="secondary" disabled>
                           Member
                         </Button>
@@ -459,13 +479,23 @@ const ClubVerse = () => {
                     </div>
                   </div>
                   
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => openClubDetail(club)}
-                  >
-                    View Club
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => openClubDetail(club)}
+                    >
+                      View Club
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => openChat(club)}
+                      className="gap-2"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      Chat
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -543,6 +573,24 @@ const ClubVerse = () => {
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Club Chat Dialog */}
+      <Dialog open={showChat} onOpenChange={setShowChat}>
+        <DialogContent className="max-w-4xl h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedChatClub?.name} - Vanishing Chat
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedChatClub && (
+            <ClubChat 
+              clubId={selectedChatClub.id} 
+              clubName={selectedChatClub.name}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
