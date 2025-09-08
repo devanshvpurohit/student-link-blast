@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Users, Crown, User } from 'lucide-react';
+import { Plus, Users, Crown, User, Lock, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +20,7 @@ interface Club {
   category?: string;
   avatar_url?: string;
   created_by: string;
+  visibility: 'public' | 'private';
   member_count?: number;
   user_membership?: {
     status: string;
@@ -45,6 +47,7 @@ const ClubVerse = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const { user } = useAuth();
@@ -81,6 +84,7 @@ const ClubVerse = () => {
       // Process clubs with member count and user membership status
       const processedClubs = data?.map(club => ({
         ...club,
+        visibility: club.visibility as 'public' | 'private',
         member_count: Array.isArray(club.club_members) ? club.club_members.length : 0,
         user_membership: membershipMap.get(club.id),
       })) || [];
@@ -102,7 +106,11 @@ const ClubVerse = () => {
     if (error) {
       console.error('Error fetching my clubs:', error);
     } else {
-      setMyClubs(data || []);
+      const processedMyClubs = data?.map(club => ({
+        ...club,
+        visibility: club.visibility as 'public' | 'private',
+      })) || [];
+      setMyClubs(processedMyClubs);
     }
   };
 
@@ -140,6 +148,7 @@ const ClubVerse = () => {
         name: name.trim(),
         description: description.trim() || null,
         category: category.trim() || null,
+        visibility: visibility,
         created_by: user?.id,
       });
 
@@ -157,6 +166,7 @@ const ClubVerse = () => {
       setName('');
       setDescription('');
       setCategory('');
+      setVisibility('public');
       setIsCreateOpen(false);
       fetchClubs();
       fetchMyClubs();
@@ -244,6 +254,28 @@ const ClubVerse = () => {
                   />
                 </div>
                 
+                <div>
+                  <Select value={visibility} onValueChange={(value: 'public' | 'private') => setVisibility(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Club visibility" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4" />
+                          Public - Anyone can see and join
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="private">
+                        <div className="flex items-center gap-2">
+                          <Lock className="h-4 w-4" />
+                          Private - Invite only
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <Button onClick={createClub} className="w-full">
                   Create Club
                 </Button>
@@ -272,7 +304,14 @@ const ClubVerse = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <h3 className="font-semibold">{club.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{club.name}</h3>
+                        {club.visibility === 'private' ? (
+                          <Lock className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
                       {club.category && (
                         <Badge variant="secondary" className="text-xs">
                           {club.category}
@@ -351,7 +390,14 @@ const ClubVerse = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-semibold">{club.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{club.name}</h3>
+                        {club.visibility === 'private' ? (
+                          <Lock className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
                       {club.category && (
                         <Badge variant="secondary" className="text-xs">
                           {club.category}
@@ -394,7 +440,14 @@ const ClubVerse = () => {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div>{selectedClub?.name}</div>
+                <div className="flex items-center gap-2">
+                  <span>{selectedClub?.name}</span>
+                  {selectedClub?.visibility === 'private' ? (
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </div>
                 {selectedClub?.category && (
                   <Badge variant="secondary" className="text-xs">
                     {selectedClub.category}
