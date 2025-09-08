@@ -154,6 +154,57 @@ export type Database = {
           },
         ]
       }
+      club_messages: {
+        Row: {
+          club_id: string
+          content: string
+          created_at: string
+          expires_at: string
+          id: string
+          message_type: string
+          sender_id: string
+          updated_at: string
+          viewed_by: Json | null
+        }
+        Insert: {
+          club_id: string
+          content: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          message_type?: string
+          sender_id: string
+          updated_at?: string
+          viewed_by?: Json | null
+        }
+        Update: {
+          club_id?: string
+          content?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          message_type?: string
+          sender_id?: string
+          updated_at?: string
+          viewed_by?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_messages_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clubs: {
         Row: {
           avatar_url: string | null
@@ -376,7 +427,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_expired_club_messages: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      mark_club_message_viewed: {
+        Args: { message_id: string; user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
