@@ -61,47 +61,84 @@ const ClubVerse = () => {
   }, [user]);
 
   const fetchClubs = async () => {
-    const { data, error } = await supabase
+    // First get all clubs
+    const { data: clubsData, error: clubsError } = await supabase
       .from('clubs')
-      .select(`
-        *,
-        club_members(count),
-        club_members!inner(status, role)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching clubs:', error);
-    } else {
-      // Get current user's memberships
-      const { data: userMemberships } = await supabase
-        .from('club_members')
-        .select('club_id, status, role')
-        .eq('user_id', user?.id);
-
-      const membershipMap = new Map(userMemberships?.map(m => [m.club_id, m]) || []);
-      
-      // Process clubs with member count and user membership status
-      const processedClubs = data?.map(club => ({
-        ...club,
-        visibility: club.visibility as 'public' | 'private',
-        member_count: Array.isArray(club.club_members) ? club.club_members.length : 0,
-        user_membership: membershipMap.get(club.id),
-      })) || [];
-      
-      setClubs(processedClubs);
+    if (clubsError) {
+      console.error('Error fetching clubs:', clubsError);
+      return;
     }
+
+    // Get member counts for each club
+    const { data: memberCounts, error: memberError } = await supabase
+      .from('club_members')
+      .select('club_id')
+      .eq('status', 'approved');
+
+    if (memberError) {
+      console.error('Error fetching member counts:', memberError);
+      return;
+    }
+
+    // Get current user's memberships
+    const { data: userMemberships, error: membershipError } = await supabase
+      .from('club_members')
+      .select('club_id, status, role')
+      .eq('user_id', user?.id);
+
+    if (membershipError) {
+      console.error('Error fetching user memberships:', membershipError);
+      return;
+    }
+
+    // Create member count map
+    const memberCountMap = new Map();
+    memberCounts?.forEach(member => {
+      const count = memberCountMap.get(member.club_id) || 0;
+      memberCountMap.set(member.club_id, count + 1);
+    });
+
+    // Create user membership map
+    const membershipMap = new Map(userMemberships?.map(m => [m.club_id, m]) || []);
+    
+    // Process clubs with member count and user membership status
+    const processedClubs = clubsData?.map(club => ({
+      ...club,
+      visibility: club.visibility as 'public' | 'private',
+      member_count: memberCountMap.get(club.id) || 0,
+      user_membership: membershipMap.get(club.id),
+    })) || [];
+    
+    setClubs(processedClubs);
   };
 
   const fetchMyClubs = async () => {
+    // First get user's club memberships
+    const { data: memberships, error: membershipError } = await supabase
+      .from('club_members')
+      .select('club_id')
+      .eq('user_id', user?.id)
+      .eq('status', 'approved');
+
+    if (membershipError) {
+      console.error('Error fetching memberships:', membershipError);
+      return;
+    }
+
+    if (!memberships || memberships.length === 0) {
+      setMyClubs([]);
+      return;
+    }
+
+    // Get clubs the user is a member of
+    const clubIds = memberships.map(m => m.club_id);
     const { data, error } = await supabase
       .from('clubs')
-      .select(`
-        *,
-        club_members!inner(status, role)
-      `)
-      .eq('club_members.user_id', user?.id)
-      .eq('club_members.status', 'approved');
+      .select('*')
+      .in('id', clubIds);
 
     if (error) {
       console.error('Error fetching my clubs:', error);
@@ -137,6 +174,22 @@ const ClubVerse = () => {
       toast({
         title: "Error",
         description: "Please enter a club name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if club name already exists
+    const { data: existingClub } = await supabase
+      .from('clubs')
+      .select('id')
+      .eq('name', name.trim())
+      .single();
+
+    if (existingClub) {
+      toast({
+        title: "Error",
+        description: "A club with this name already exists",
         variant: "destructive",
       });
       return;
