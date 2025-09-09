@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import ClubChat from '@/components/ClubChat';
+import ClubDashboard from '@/components/ClubDashboard';
 
 interface Club {
   id: string;
@@ -21,6 +22,7 @@ interface Club {
   category?: string;
   avatar_url?: string;
   created_by: string;
+  created_at: string;
   visibility: 'public' | 'private';
   member_count?: number;
   user_membership?: {
@@ -51,6 +53,8 @@ const ClubVerse = () => {
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [showChat, setShowChat] = useState(false);
   const [selectedChatClub, setSelectedChatClub] = useState<Club | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [selectedDashboardClub, setSelectedDashboardClub] = useState<Club | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const { user } = useAuth();
@@ -119,38 +123,40 @@ const ClubVerse = () => {
   };
 
   const fetchMyClubs = async () => {
-    // First get user's club memberships
-    const { data: memberships, error: membershipError } = await supabase
-      .from('club_members')
-      .select('club_id')
-      .eq('user_id', user?.id)
-      .eq('status', 'approved');
+    try {
+      // Get user's club memberships first
+      const { data: memberships } = await supabase
+        .from('club_members')
+        .select('club_id')
+        .eq('user_id', user?.id)
+        .eq('status', 'approved');
 
-    if (membershipError) {
-      console.error('Error fetching memberships:', membershipError);
-      return;
-    }
+      const memberClubIds = memberships?.map(m => m.club_id) || [];
 
-    if (!memberships || memberships.length === 0) {
-      setMyClubs([]);
-      return;
-    }
+      // Get clubs where user is either creator or approved member
+      let query = supabase
+        .from('clubs')
+        .select('*');
 
-    // Get clubs the user is a member of
-    const clubIds = memberships.map(m => m.club_id);
-    const { data, error } = await supabase
-      .from('clubs')
-      .select('*')
-      .in('id', clubIds);
+      if (memberClubIds.length > 0) {
+        query = query.or(`created_by.eq.${user?.id},id.in.(${memberClubIds.join(',')})`);
+      } else {
+        query = query.eq('created_by', user?.id || '');
+      }
 
-    if (error) {
-      console.error('Error fetching my clubs:', error);
-    } else {
-      const processedMyClubs = data?.map(club => ({
-        ...club,
-        visibility: club.visibility as 'public' | 'private',
-      })) || [];
-      setMyClubs(processedMyClubs);
+      const { data: clubsData, error: clubsError } = await query;
+
+      if (clubsError) {
+        console.error('Error fetching my clubs:', clubsError);
+      } else {
+        const processedMyClubs = clubsData?.map(club => ({
+          ...club,
+          visibility: club.visibility as 'public' | 'private',
+        })) || [];
+        setMyClubs(processedMyClubs);
+      }
+    } catch (error) {
+      console.error('Error in fetchMyClubs:', error);
     }
   };
 
@@ -262,6 +268,11 @@ const ClubVerse = () => {
   const openChat = (club: Club) => {
     setSelectedChatClub(club);
     setShowChat(true);
+  };
+
+  const openDashboard = (club: Club) => {
+    setSelectedDashboardClub(club);
+    setShowDashboard(true);
   };
 
   const getRoleIcon = (role: string) => {
@@ -478,9 +489,9 @@ const ClubVerse = () => {
                     <Button 
                       variant="outline" 
                       className="flex-1"
-                      onClick={() => openClubDetail(club)}
+                      onClick={() => openDashboard(club)}
                     >
-                      View Club
+                      Dashboard
                     </Button>
                     <Button
                       variant="secondary"
@@ -588,6 +599,18 @@ const ClubVerse = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Club Dashboard */}
+      {showDashboard && selectedDashboardClub && (
+        <ClubDashboard 
+          club={selectedDashboardClub}
+          onClose={() => setShowDashboard(false)}
+          onOpenChat={(club) => {
+            setShowDashboard(false);
+            openChat(club);
+          }}
+        />
+      )}
     </div>
   );
 };
