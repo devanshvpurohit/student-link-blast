@@ -429,11 +429,6 @@ const ClubVerse = () => {
                         </Button>
                       )}
                       
-                      {club.user_membership?.status === 'approved' && !club.user_membership && (
-                        <Button size="sm" variant="secondary" disabled>
-                          Member
-                        </Button>
-                      )}
                     </div>
                   </div>
                 </CardContent>

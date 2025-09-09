@@ -190,8 +190,8 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
     const expiry = new Date(expiresAt);
     const timeLeft = Math.floor((expiry.getTime() - now.getTime()) / 1000);
     
-    if (timeLeft < 10) return 'text-red-500';
-    if (timeLeft < 30) return 'text-orange-500';
+    if (timeLeft < 10) return 'text-destructive';
+    if (timeLeft < 30) return 'text-orange-500 dark:text-orange-400';
     return 'text-muted-foreground';
   };
 

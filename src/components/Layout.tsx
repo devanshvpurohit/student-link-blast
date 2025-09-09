@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Users, MessageSquare, Bell, Hash, Calendar, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -34,16 +35,19 @@ const Layout = ({ children }: LayoutProps) => {
             Bazinga
           </h1>
           
-          {user && (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">
-                {user.email}
-              </span>
-              <Button variant="outline" size="sm" onClick={signOut}>
-                Sign Out
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            {user && (
+              <>
+                <span className="text-sm text-muted-foreground">
+                  {user.email}
+                </span>
+                <Button variant="outline" size="sm" onClick={signOut}>
+                  Sign Out
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
