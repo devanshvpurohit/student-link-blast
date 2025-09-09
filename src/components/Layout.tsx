@@ -29,21 +29,22 @@ const Layout = ({ children }: LayoutProps) => {
       <header className="bg-card border-b px-4 py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <h1 
-            className="text-2xl font-bold text-primary cursor-pointer"
+            className="text-xl md:text-2xl font-bold text-primary cursor-pointer"
             onClick={() => navigate('/')}
           >
             Bazinga
           </h1>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <ThemeToggle />
             {user && (
               <>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs md:text-sm text-muted-foreground hidden sm:block">
                   {user.email}
                 </span>
                 <Button variant="outline" size="sm" onClick={signOut}>
-                  Sign Out
+                  <span className="hidden sm:inline">Sign Out</span>
+                  <span className="sm:hidden">Out</span>
                 </Button>
               </>
             )}
@@ -51,10 +52,30 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto flex">
-        {/* Navigation */}
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row">
+        {/* Mobile Navigation */}
         {user && (
-          <nav className="w-64 bg-card border-r min-h-screen p-4">
+          <nav className="lg:hidden bg-card border-b p-2">
+            <div className="flex gap-1 overflow-x-auto">
+              {menuItems.map((item) => (
+                <Button
+                  key={item.path}
+                  variant={location.pathname === item.path ? "default" : "ghost"}
+                  size="sm"
+                  className="flex-shrink-0 gap-2"
+                  onClick={() => navigate(item.path)}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="hidden xs:inline">{item.label}</span>
+                </Button>
+              ))}
+            </div>
+          </nav>
+        )}
+
+        {/* Desktop Navigation */}
+        {user && (
+          <nav className="hidden lg:block w-64 bg-card border-r min-h-screen p-4">
             <div className="space-y-2">
               {menuItems.map((item) => (
                 <Button
@@ -72,7 +93,7 @@ const Layout = ({ children }: LayoutProps) => {
         )}
 
         {/* Main Content */}
-        <main className="flex-1">
+        <main className="flex-1 min-h-screen">
           {children}
         </main>
       </div>

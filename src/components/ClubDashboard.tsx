@@ -158,8 +158,8 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="mx-2 max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader className="pb-3">
           <DialogTitle className="flex items-center gap-3">
             <Avatar>
               <AvatarImage src={club.avatar_url} />
@@ -180,36 +180,40 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
         </DialogHeader>
 
         <div className="flex flex-col h-full">
-          <div className="flex gap-2 mb-4">
-            <Button 
+          <div className="flex flex-col xs:flex-row gap-2 mb-4">
+            <Button
               onClick={() => onOpenChat(club)}
-              className="gap-2"
+              className="gap-2 flex-1"
             >
               <MessageCircle className="h-4 w-4" />
-              Open Chat
+              <span className="hidden xs:inline">Open Chat</span>
+              <span className="xs:hidden">Chat</span>
             </Button>
             {canManageMembers && (
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2 flex-1">
                 <Settings className="h-4 w-4" />
-                Settings
+                <span className="hidden xs:inline">Settings</span>
+                <span className="xs:hidden">Set</span>
               </Button>
             )}
           </div>
 
           <Tabs defaultValue="members" className="flex-1">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="members">
-                Members ({members.length})
+              <TabsTrigger value="members" className="text-xs sm:text-sm">
+                <span className="hidden sm:inline">Members ({members.length})</span>
+                <span className="sm:hidden">Members</span>
               </TabsTrigger>
               {canManageMembers && (
-                <TabsTrigger value="pending">
-                  Pending ({pendingMembers.length})
+                <TabsTrigger value="pending" className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Pending ({pendingMembers.length})</span>
+                  <span className="sm:hidden">Pending</span>
                 </TabsTrigger>
               )}
-              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="members" className="space-y-4 overflow-y-auto max-h-96">
+            <TabsContent value="members" className="space-y-4 overflow-y-auto max-h-60 sm:max-h-96">
               {members.map((member) => (
                 <Card key={member.id}>
                   <CardContent className="p-4">
@@ -254,7 +258,7 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
             </TabsContent>
 
             {canManageMembers && (
-              <TabsContent value="pending" className="space-y-4 overflow-y-auto max-h-96">
+              <TabsContent value="pending" className="space-y-4 overflow-y-auto max-h-60 sm:max-h-96">
                 {pendingMembers.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center">
@@ -284,11 +288,11 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
                             </div>
                           </div>
                           
-                          <div className="flex gap-2">
+                          <div className="flex flex-col xs:flex-row gap-2">
                             <Button
                               size="sm"
                               onClick={() => handleMemberAction(member.id, 'approve')}
-                              className="gap-1"
+                              className="gap-1 flex-1"
                             >
                               <UserCheck className="h-4 w-4" />
                               Approve
@@ -297,7 +301,7 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleMemberAction(member.id, 'reject')}
-                              className="gap-1"
+                              className="gap-1 flex-1"
                             >
                               <UserX className="h-4 w-4" />
                               Reject
@@ -312,7 +316,7 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
             )}
 
             <TabsContent value="overview" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm flex items-center gap-2">

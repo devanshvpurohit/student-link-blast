@@ -284,19 +284,20 @@ const ClubVerse = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">ClubVerse</h1>
+    <div className="p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">ClubVerse</h1>
         
         {user && (
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2">
+              <Button className="gap-2 w-full sm:w-auto">
                 <Plus className="h-4 w-4" />
-                Create Club
+                <span className="hidden xs:inline">Create Club</span>
+                <span className="xs:hidden">Create</span>
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="mx-4 max-w-md">
               <DialogHeader>
                 <DialogTitle>Create New Club</DialogTitle>
               </DialogHeader>
@@ -358,13 +359,19 @@ const ClubVerse = () => {
       </div>
 
       <Tabs defaultValue="discover" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="discover">Discover Clubs</TabsTrigger>
-          <TabsTrigger value="my-clubs">My Clubs ({myClubs.length})</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="discover" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Discover Clubs</span>
+            <span className="sm:hidden">Discover</span>
+          </TabsTrigger>
+          <TabsTrigger value="my-clubs" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">My Clubs ({myClubs.length})</span>
+            <span className="sm:hidden">Mine ({myClubs.length})</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="discover" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {clubs.map((club) => (
               <Card key={club.id} className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
@@ -404,11 +411,12 @@ const ClubVerse = () => {
                       {club.member_count || 0} members
                     </div>
                     
-                    <div className="flex gap-2">
+                    <div className="flex flex-col xs:flex-row gap-2">
                       <Button 
                         size="sm" 
                         variant="outline"
                         onClick={() => openClubDetail(club)}
+                        className="flex-1"
                       >
                         View
                       </Button>
@@ -418,10 +426,10 @@ const ClubVerse = () => {
                           size="sm"
                           variant="secondary"
                           onClick={() => openChat(club)}
-                          className="gap-2"
+                          className="gap-1 flex-1"
                         >
                           <MessageCircle className="h-4 w-4" />
-                          Chat
+                          <span className="hidden xs:inline">Chat</span>
                         </Button>
                       )}
                       
@@ -429,6 +437,7 @@ const ClubVerse = () => {
                         <Button 
                           size="sm"
                           onClick={() => joinClub(club.id)}
+                          className="flex-1"
                         >
                           Join
                         </Button>
@@ -457,7 +466,7 @@ const ClubVerse = () => {
         </TabsContent>
 
         <TabsContent value="my-clubs">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {myClubs.map((club) => (
               <Card key={club.id} className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
@@ -485,21 +494,22 @@ const ClubVerse = () => {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex flex-col xs:flex-row gap-2">
                     <Button 
                       variant="outline" 
                       className="flex-1"
                       onClick={() => openDashboard(club)}
                     >
-                      Dashboard
+                      <span className="hidden xs:inline">Dashboard</span>
+                      <span className="xs:hidden">Dash</span>
                     </Button>
                     <Button
                       variant="secondary"
                       onClick={() => openChat(club)}
-                      className="gap-2"
+                      className="gap-1 flex-1"
                     >
                       <MessageCircle className="h-4 w-4" />
-                      Chat
+                      <span className="hidden xs:inline">Chat</span>
                     </Button>
                   </div>
                 </CardContent>

@@ -196,13 +196,15 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
   };
 
   return (
-    <Card className="h-[600px] flex flex-col">
+    <Card className="h-[500px] sm:h-[600px] flex flex-col">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Timer className="h-5 w-5" />
-          {clubName} Chat
-          <span className="text-sm font-normal text-muted-foreground">
-            (Messages vanish after viewing)
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Timer className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="hidden sm:inline">{clubName} Chat</span>
+          <span className="sm:hidden">Chat</span>
+          <span className="text-xs sm:text-sm font-normal text-muted-foreground">
+            <span className="hidden sm:inline">(Messages vanish after viewing)</span>
+            <span className="sm:hidden">(Vanish)</span>
           </span>
         </CardTitle>
       </CardHeader>
@@ -220,14 +222,14 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
             messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex items-start gap-3 p-3 rounded-lg ${
+                className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg ${
                   message.sender_id === user?.id 
-                    ? 'bg-primary/10 ml-8' 
-                    : 'bg-background mr-8'
+                    ? 'bg-primary/10 ml-4 sm:ml-8' 
+                    : 'bg-background mr-4 sm:mr-8'
                 } hover:shadow-sm transition-all cursor-pointer`}
                 onClick={() => markAsViewed(message.id)}
               >
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0">
                   <AvatarImage src={message.profiles.avatar_url} />
                   <AvatarFallback>
                     {message.profiles.full_name?.charAt(0) || 'U'}
@@ -235,8 +237,8 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
                 </Avatar>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium">
+                  <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2 mb-1">
+                    <span className="text-xs sm:text-sm font-medium truncate">
                       {message.profiles.full_name}
                     </span>
                     <div className={`flex items-center gap-1 text-xs ${getExpirationColor(message.expires_at)}`}>
@@ -247,7 +249,7 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
                       <Eye className="h-3 w-3 text-blue-500" />
                     )}
                   </div>
-                  <p className="text-sm break-words">{message.content}</p>
+                  <p className="text-xs sm:text-sm break-words">{message.content}</p>
                   {Array.isArray(message.viewed_by) && message.viewed_by.length > 0 && (
                     <div className="text-xs text-muted-foreground mt-1">
                       Viewed by {message.viewed_by.length} member(s)
@@ -262,10 +264,10 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
 
         {/* Message Input */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Expires in:</span>
+          <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2">
+            <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Expires in:</span>
             <Select value={expirationTime} onValueChange={setExpirationTime}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-32 text-xs sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -280,7 +282,7 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
           
           <div className="flex gap-2">
             <Input
-              placeholder="Type a vanishing message..."
+              placeholder="Type a message..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={(e) => {
