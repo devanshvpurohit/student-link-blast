@@ -24,40 +24,42 @@ const Index = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+    <div className="p-3 sm:p-6 max-w-6xl mx-auto">
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           Welcome to Bazinga
         </h1>
-        <p className="text-xl text-muted-foreground">The ultimate campus social platform</p>
+        <p className="text-lg sm:text-xl text-muted-foreground">The ultimate campus social platform</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/connect'}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+              <div className="p-1.5 sm:p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                <Users className="h-4 w-4 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
               </div>
               Connect
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
+          <CardContent className="pt-0">
+            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
               Find friends, dating connections, and networking opportunities on campus.
             </p>
-            <div className="flex gap-2 mb-4">
-              <Badge variant="secondary" className="gap-1">
+            <div className="flex gap-1 sm:gap-2 mb-3 sm:mb-4 flex-wrap">
+              <Badge variant="secondary" className="gap-1 text-xs">
                 <Users className="h-3 w-3" />
-                Friends
+                <span className="hidden xs:inline">Friends</span>
               </Badge>
-              <Badge variant="secondary" className="gap-1">
+              <Badge variant="secondary" className="gap-1 text-xs">
                 <Heart className="h-3 w-3" />
-                Dating
+                <span className="hidden xs:inline">Dating</span>
               </Badge>
             </div>
-            <Button variant="outline" className="w-full gap-2">
-              Start Connecting <ArrowRight className="h-4 w-4" />
+            <Button variant="outline" className="w-full gap-2 text-sm">
+              <span className="hidden sm:inline">Start Connecting</span>
+              <span className="sm:hidden">Connect</span>
+              <ArrowRight className="h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
@@ -166,13 +168,15 @@ const Index = () => {
       </div>
 
       <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-        <CardContent className="p-6 text-center">
-          <h2 className="text-2xl font-bold mb-2">Ready to get started?</h2>
-          <p className="text-muted-foreground mb-4">
+        <CardContent className="p-4 sm:p-6 text-center">
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">Ready to get started?</h2>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4">
             Complete your profile and start connecting with your campus community.
           </p>
-          <Button size="lg" className="gap-2" onClick={() => window.location.href = '/profile'}>
-            Complete Profile <ArrowRight className="h-4 w-4" />
+          <Button size="lg" className="gap-2 w-full sm:w-auto" onClick={() => window.location.href = '/profile'}>
+            <span className="hidden sm:inline">Complete Profile</span>
+            <span className="sm:hidden">Get Started</span>
+            <ArrowRight className="h-4 w-4" />
           </Button>
         </CardContent>
       </Card>

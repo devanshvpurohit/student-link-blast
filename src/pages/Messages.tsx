@@ -243,43 +243,43 @@ const Messages = () => {
   };
 
   return (
-    <div className="h-screen flex">
+    <div className="h-screen flex flex-col lg:flex-row">
       {/* Connections Sidebar */}
-      <div className="w-80 border-r bg-card">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Messages</h2>
+      <div className="lg:w-80 border-r lg:border-b-0 border-b bg-card">
+        <div className="p-3 lg:p-4 border-b">
+          <h2 className="text-base lg:text-lg font-semibold">Messages</h2>
         </div>
         
-        <ScrollArea className="h-[calc(100vh-80px)]">
+        <ScrollArea className="h-48 lg:h-[calc(100vh-80px)]">
           <div className="p-2">
             {connections.map((connection) => (
               <div
                 key={connection.id}
-                className={`p-3 rounded-lg cursor-pointer hover:bg-accent transition-colors ${
+                className={`p-2 lg:p-3 rounded-lg cursor-pointer hover:bg-accent transition-colors ${
                   selectedConnection?.id === connection.id ? 'bg-accent' : ''
                 }`}
                 onClick={() => setSelectedConnection(connection)}
               >
-                <div className="flex items-center space-x-3">
-                  <Avatar>
+                <div className="flex items-center space-x-2 lg:space-x-3">
+                  <Avatar className="h-8 w-8 lg:h-10 lg:w-10">
                     <AvatarImage src={connection.other_profile.avatar_url} />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-xs lg:text-sm">
                       {connection.other_profile.full_name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-medium truncate">
+                      <h3 className="text-sm lg:text-base font-medium truncate">
                         {connection.other_profile.full_name}
                       </h3>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs hidden lg:block">
                         {connection.connection_type}
                       </Badge>
                     </div>
                     
                     {connection.last_message && (
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs lg:text-sm text-muted-foreground">
                         <p className="truncate">
                           {connection.last_message.sender_id === user?.id && 'You: '}
                           {connection.last_message.voice_note_url ? '🎤 Voice message' : connection.last_message.content}
@@ -302,16 +302,16 @@ const Messages = () => {
         {selectedConnection ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b bg-card">
-              <div className="flex items-center space-x-3">
-                <Avatar>
+            <div className="p-3 lg:p-4 border-b bg-card">
+              <div className="flex items-center space-x-2 lg:space-x-3">
+                <Avatar className="h-8 w-8 lg:h-10 lg:w-10">
                   <AvatarImage src={selectedConnection.other_profile.avatar_url} />
-                  <AvatarFallback>
+                  <AvatarFallback className="text-xs lg:text-sm">
                     {selectedConnection.other_profile.full_name?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold">{selectedConnection.other_profile.full_name}</h3>
+                  <h3 className="text-sm lg:text-base font-semibold">{selectedConnection.other_profile.full_name}</h3>
                   <Badge variant="secondary" className="text-xs">
                     {selectedConnection.connection_type} connection
                   </Badge>
@@ -320,8 +320,8 @@ const Messages = () => {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
+            <ScrollArea className="flex-1 p-2 lg:p-4">
+              <div className="space-y-3 lg:space-y-4">
                 {messages.map((message) => {
                   const isMe = message.sender_id === user?.id;
                   
@@ -330,22 +330,22 @@ const Messages = () => {
                       key={message.id}
                       className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`flex items-start space-x-2 max-w-[70%] ${isMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                        <Avatar className="h-8 w-8">
+                      <div className={`flex items-start space-x-2 max-w-[85%] lg:max-w-[70%] ${isMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                        <Avatar className="h-6 w-6 lg:h-8 lg:w-8 flex-shrink-0">
                           <AvatarImage src={message.profiles.avatar_url} />
-                          <AvatarFallback>
+                          <AvatarFallback className="text-xs">
                             {message.profiles.full_name?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         
-                        <div className={`rounded-lg p-3 ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <div className={`rounded-lg p-2 lg:p-3 ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                           {message.voice_note_url ? (
                             <VoiceNotePlayer 
                               audioUrl={message.voice_note_url} 
                               duration={message.voice_note_duration}
                             />
                           ) : (
-                            <p className="whitespace-pre-wrap">{message.content}</p>
+                            <p className="text-sm lg:text-base whitespace-pre-wrap">{message.content}</p>
                           )}
                           <p className={`text-xs mt-1 ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                             {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
@@ -359,7 +359,7 @@ const Messages = () => {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="p-4 border-t bg-card">
+            <div className="p-3 lg:p-4 border-t bg-card">
               {showVoiceRecorder ? (
                 <VoiceNoteRecorder
                   onSendVoiceNote={handleSendVoiceNote}
@@ -373,13 +373,21 @@ const Messages = () => {
                     onKeyPress={handleKeyPress}
                     placeholder="Type a message..."
                     disabled={loading}
+                    className="text-sm lg:text-base"
                   />
-                  <VoiceNoteRecorder
-                    onSendVoiceNote={handleSendVoiceNote}
-                  />
-                  <Button onClick={sendMessage} disabled={loading || !newMessage.trim()}>
-                    <Send className="h-4 w-4" />
-                  </Button>
+                  <div className="flex space-x-1">
+                    <VoiceNoteRecorder
+                      onSendVoiceNote={handleSendVoiceNote}
+                    />
+                    <Button 
+                      onClick={sendMessage} 
+                      disabled={loading || !newMessage.trim()}
+                      size="sm"
+                      className="px-2 lg:px-4"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

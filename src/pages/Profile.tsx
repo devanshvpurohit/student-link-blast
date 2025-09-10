@@ -159,17 +159,18 @@ const Profile = () => {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">My Profile</h1>
+    <div className="p-3 sm:p-6 max-w-4xl mx-auto">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
+        <h1 className="text-2xl sm:text-3xl font-bold">My Profile</h1>
         {!isEditing ? (
-          <Button onClick={() => setIsEditing(true)} className="gap-2">
+          <Button onClick={() => setIsEditing(true)} className="gap-2 w-full sm:w-auto">
             <User className="h-4 w-4" />
-            Edit Profile
+            <span className="hidden sm:inline">Edit Profile</span>
+            <span className="sm:hidden">Edit</span>
           </Button>
         ) : (
-          <div className="flex gap-2">
-            <Button onClick={handleSave} className="gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button onClick={handleSave} className="gap-2 flex-1 sm:flex-none">
               <Save className="h-4 w-4" />
               Save
             </Button>
@@ -179,6 +180,7 @@ const Profile = () => {
                 setIsEditing(false);
                 setEditedProfile(profile);
               }}
+              className="flex-1 sm:flex-none"
             >
               Cancel
             </Button>
@@ -186,23 +188,23 @@ const Profile = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Profile Picture & Basic Info */}
         <Card>
           <CardHeader>
             <CardTitle>Profile Picture</CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <div className="relative mx-auto w-32 h-32">
-              <Avatar className="w-32 h-32">
+            <div className="relative mx-auto w-24 h-24 sm:w-32 sm:h-32">
+              <Avatar className="w-24 h-24 sm:w-32 sm:h-32">
                 <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback className="text-2xl">
+                <AvatarFallback className="text-xl sm:text-2xl">
                   {profile.full_name?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
               {isEditing && (
-                <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
-                  <Camera className="h-4 w-4" />
+                <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-1.5 sm:p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
+                  <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
                   <input
                     type="file"
                     accept="image/*"
@@ -225,7 +227,7 @@ const Profile = () => {
             <CardTitle>Basic Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Full Name</label>
                 {isEditing ? (

@@ -50,44 +50,48 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
 
   if (audioBlob) {
     return (
-      <div className="flex items-center gap-2 p-2 border rounded-lg bg-background">
-        <VoiceNotePlayer 
-          audioUrl={URL.createObjectURL(audioBlob)} 
-          duration={duration}
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleCancel}
-          className="h-8 w-8 p-0"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={handleSend}
-          className="h-8 w-8 p-0"
-        >
-          <Send className="h-4 w-4" />
-        </Button>
+      <div className="flex items-center gap-2 p-2 border rounded-lg bg-background w-full">
+        <div className="flex-1 min-w-0">
+          <VoiceNotePlayer 
+            audioUrl={URL.createObjectURL(audioBlob)} 
+            duration={duration}
+          />
+        </div>
+        <div className="flex gap-1 flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
+            className="h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleSend}
+            className="h-8 w-8 p-0"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (isRecording) {
     return (
-      <div className="flex items-center gap-2 p-2 border rounded-lg bg-background">
-        <div className="flex items-center gap-2 flex-1">
-          <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-          <span className="text-sm font-medium">Recording...</span>
-          <span className="text-sm text-muted-foreground">{formatTime(duration)}</span>
+      <div className="flex items-center gap-2 p-2 border rounded-lg bg-background w-full">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-pulse flex-shrink-0" />
+          <span className="text-xs sm:text-sm font-medium truncate">Recording...</span>
+          <span className="text-xs sm:text-sm text-muted-foreground">{formatTime(duration)}</span>
         </div>
         <Button
           variant="destructive"
           size="sm"
           onClick={stopRecording}
-          className="h-8 w-8 p-0"
+          className="h-8 w-8 p-0 flex-shrink-0"
         >
           <Square className="h-4 w-4" />
         </Button>
