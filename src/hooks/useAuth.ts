@@ -103,6 +103,54 @@ export const useAuth = () => {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password reset email sent",
+        description: "Please check your email for the password reset link.",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password updated",
+        description: "Your password has been successfully updated.",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   return {
     user,
     session,
@@ -110,5 +158,7 @@ export const useAuth = () => {
     signUp,
     signIn,
     signOut,
+    resetPassword,
+    updatePassword,
   };
 };
