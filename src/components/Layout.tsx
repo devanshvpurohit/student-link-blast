@@ -1,7 +1,8 @@
-import { ReactNode } from 'react';
-import { Users, MessageSquare, Bell, Hash, Calendar, User } from 'lucide-react';
+import { ReactNode, useState } from 'react';
+import { Users, MessageSquare, Bell, Hash, Calendar, User, Hand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { HandGestureControl } from '@/components/HandGestureControl';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -13,6 +14,7 @@ const Layout = ({ children }: LayoutProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [showHandControl, setShowHandControl] = useState(false);
 
   const menuItems = [
     { icon: Users, label: 'Connect', path: '/connect' },
@@ -36,6 +38,14 @@ const Layout = ({ children }: LayoutProps) => {
           </h1>
           
           <div className="flex items-center gap-2 md:gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowHandControl(!showHandControl)}
+              className="h-8 w-8 p-0"
+            >
+              <Hand className="h-4 w-4" />
+            </Button>
             <ThemeToggle />
             {user && (
               <>
@@ -97,6 +107,8 @@ const Layout = ({ children }: LayoutProps) => {
           {children}
         </main>
       </div>
+
+      {showHandControl && <HandGestureControl onClose={() => setShowHandControl(false)} />}
     </div>
   );
 };
