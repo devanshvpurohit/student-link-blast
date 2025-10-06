@@ -6,7 +6,9 @@ export type GestureType = 'pinch' | 'swipe_left' | 'swipe_right' | 'swipe_up' | 
 export const useHandTracking = (onGesture?: (gesture: GestureType) => void) => {
   const [isActive, setIsActive] = useState(false);
   const [currentGesture, setCurrentGesture] = useState<GestureType>(null);
+  const [landmarks, setLandmarks] = useState<any[]>([]);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
   const animationFrameRef = useRef<number>();
   const lastPositionRef = useRef<{ x: number; y: number } | null>(null);
@@ -62,6 +64,63 @@ export const useHandTracking = (onGesture?: (gesture: GestureType) => void) => {
     return null;
   }, []);
 
+  const drawHandMesh = useCallback((landmarks: any[]) => {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    if (!canvas || !video) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas size to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (landmarks.length === 0) return;
+
+    // Hand connections (MediaPipe hand model)
+    const connections = [
+      [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
+      [0, 5], [5, 6], [6, 7], [7, 8], // Index
+      [0, 9], [9, 10], [10, 11], [11, 12], // Middle
+      [0, 13], [13, 14], [14, 15], [15, 16], // Ring
+      [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
+      [5, 9], [9, 13], [13, 17] // Palm
+    ];
+
+    const hand = landmarks[0];
+
+    // Draw connections
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth = 2;
+    connections.forEach(([start, end]) => {
+      const startPoint = hand[start];
+      const endPoint = hand[end];
+      
+      ctx.beginPath();
+      ctx.moveTo(startPoint.x * canvas.width, startPoint.y * canvas.height);
+      ctx.lineTo(endPoint.x * canvas.width, endPoint.y * canvas.height);
+      ctx.stroke();
+    });
+
+    // Draw landmarks
+    ctx.fillStyle = '#ff0088';
+    hand.forEach((landmark: any) => {
+      ctx.beginPath();
+      ctx.arc(
+        landmark.x * canvas.width,
+        landmark.y * canvas.height,
+        5,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+    });
+  }, []);
+
   const startTracking = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -98,6 +157,10 @@ export const useHandTracking = (onGesture?: (gesture: GestureType) => void) => {
             performance.now()
           );
 
+          // Update landmarks for visualization
+          setLandmarks(result.landmarks || []);
+          drawHandMesh(result.landmarks || []);
+
           const gesture = detectGesture(result);
           const now = Date.now();
 
@@ -118,7 +181,7 @@ export const useHandTracking = (onGesture?: (gesture: GestureType) => void) => {
     } catch (error) {
       console.error('Error starting hand tracking:', error);
     }
-  }, [detectGesture, currentGesture, onGesture]);
+  }, [detectGesture, currentGesture, onGesture, drawHandMesh]);
 
   const stopTracking = useCallback(() => {
     if (animationFrameRef.current) {
@@ -134,7 +197,16 @@ export const useHandTracking = (onGesture?: (gesture: GestureType) => void) => {
     handLandmarkerRef.current?.close();
     setIsActive(false);
     setCurrentGesture(null);
+    setLandmarks([]);
     lastPositionRef.current = null;
+
+    // Clear canvas
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -146,7 +218,9 @@ export const useHandTracking = (onGesture?: (gesture: GestureType) => void) => {
   return {
     isActive,
     currentGesture,
+    landmarks,
     videoRef,
+    canvasRef,
     startTracking,
     stopTracking
   };

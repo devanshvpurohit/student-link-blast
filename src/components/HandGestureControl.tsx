@@ -44,7 +44,7 @@ export const HandGestureControl: React.FC<HandGestureControlProps> = ({ onClose 
     }
   };
 
-  const { isActive, currentGesture, videoRef, startTracking, stopTracking } = useHandTracking(handleGesture);
+  const { isActive, currentGesture, videoRef, canvasRef, startTracking, stopTracking } = useHandTracking(handleGesture);
 
   useEffect(() => {
     startTracking();
@@ -92,8 +92,12 @@ export const HandGestureControl: React.FC<HandGestureControlProps> = ({ onClose 
             playsInline
             muted
           />
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
+          />
           {isActive && (
-            <div className="absolute top-2 left-2 right-2">
+            <div className="absolute top-2 left-2 right-2 z-10">
               <div className="bg-background/80 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium text-center">
                 {getGestureDisplay()}
               </div>
