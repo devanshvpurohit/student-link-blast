@@ -35,9 +35,6 @@ export const HandGestureControl: React.FC<HandGestureControlProps> = ({ onClose 
         toast('Pinch - Go Home');
         navigate('/');
         break;
-      case 'palm':
-        toast('Palm - Pause');
-        break;
       case 'point':
         // Just pointing, no action
         break;
@@ -59,7 +56,6 @@ export const HandGestureControl: React.FC<HandGestureControlProps> = ({ onClose 
       case 'swipe_up': return '👆 Swipe Up';
       case 'swipe_down': return '👇 Swipe Down';
       case 'point': return '☝️ Pointing';
-      case 'palm': return '✋ Palm';
       default: return '✋ Show your hand';
     }
   };
