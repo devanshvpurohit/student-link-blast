@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Users, Briefcase, UserX, MessageSquare } from 'lucide-react';
+import { Users, BookOpen, UserX, MessageSquare, GraduationCap, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +33,9 @@ const Connect = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [connectionType, setConnectionType] = useState<'friend' | 'networking'>('friend');
+  const [connectionType, setConnectionType] = useState<'classmate' | 'study_partner' | 'project_partner'>('classmate');
+  const [departmentFilter, setDepartmentFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
   const { toast } = useToast();
@@ -167,12 +169,12 @@ const Connect = () => {
     }
   };
 
-  // Filter profiles based on search term
+  // Filter profiles based on search term, department, and year
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredProfiles(profiles);
-    } else {
-      const filtered = profiles.filter(profile =>
+    let filtered = profiles;
+
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(profile =>
         profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         profile.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         profile.bio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -180,14 +182,35 @@ const Connect = () => {
           interest.toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
-      setFilteredProfiles(filtered);
     }
-  }, [searchTerm, profiles]);
+
+    if (departmentFilter) {
+      filtered = filtered.filter(profile =>
+        profile.department?.toLowerCase().includes(departmentFilter.toLowerCase())
+      );
+    }
+
+    if (yearFilter !== null) {
+      filtered = filtered.filter(profile => profile.year_of_study === yearFilter);
+    }
+
+    setFilteredProfiles(filtered);
+  }, [searchTerm, departmentFilter, yearFilter, profiles]);
 
   const getConnectionIcon = (type: string) => {
     switch (type) {
-      case 'networking': return <Briefcase className="h-4 w-4 text-blue-500" />;
+      case 'study_partner': return <BookOpen className="h-4 w-4 text-blue-500" />;
+      case 'project_partner': return <GraduationCap className="h-4 w-4 text-purple-500" />;
       default: return <Users className="h-4 w-4 text-green-500" />;
+    }
+  };
+
+  const getConnectionLabel = (type: string) => {
+    switch (type) {
+      case 'study_partner': return 'Study Partner';
+      case 'project_partner': return 'Project Partner';
+      case 'classmate': return 'Classmate';
+      default: return type;
     }
   };
 
@@ -203,7 +226,8 @@ const Connect = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Connect</h1>
+      <h1 className="text-3xl font-bold mb-6">Campus Connect</h1>
+      <p className="text-muted-foreground mb-6">Connect with classmates, find study partners, and collaborate on projects</p>
       
       <Tabs defaultValue="discover" className="space-y-6">
         <TabsList>
@@ -226,30 +250,90 @@ const Connect = () => {
             <CardHeader>
               <CardTitle>Connection Type</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex gap-2">
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-2">
                 <Button
-                  variant={connectionType === 'friend' ? 'default' : 'outline'}
-                  onClick={() => setConnectionType('friend')}
+                  variant={connectionType === 'classmate' ? 'default' : 'outline'}
+                  onClick={() => setConnectionType('classmate')}
                   className="gap-2"
                 >
                   <Users className="h-4 w-4" />
-                  Friends
+                  Classmate
                 </Button>
                 <Button
-                  variant={connectionType === 'networking' ? 'default' : 'outline'}
-                  onClick={() => setConnectionType('networking')}
+                  variant={connectionType === 'study_partner' ? 'default' : 'outline'}
+                  onClick={() => setConnectionType('study_partner')}
                   className="gap-2"
                 >
-                  <Briefcase className="h-4 w-4" />
-                  Networking
+                  <BookOpen className="h-4 w-4" />
+                  Study Partner
+                </Button>
+                <Button
+                  variant={connectionType === 'project_partner' ? 'default' : 'outline'}
+                  onClick={() => setConnectionType('project_partner')}
+                  className="gap-2"
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  Project Partner
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {profiles.map((profile) => (
+          <Card>
+            <CardHeader>
+              <CardTitle>Filters</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, interests, or bio..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  placeholder="Filter by department..."
+                  value={departmentFilter}
+                  onChange={(e) => setDepartmentFilter(e.target.value)}
+                />
+                <Input
+                  type="number"
+                  placeholder="Filter by year (1-4)..."
+                  value={yearFilter ?? ''}
+                  onChange={(e) => setYearFilter(e.target.value ? parseInt(e.target.value) : null)}
+                  min="1"
+                  max="4"
+                />
+              </div>
+              {(searchTerm || departmentFilter || yearFilter) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setDepartmentFilter('');
+                    setYearFilter(null);
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {filteredProfiles.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <p className="text-muted-foreground">No students found matching your filters</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredProfiles.map((profile) => (
               <Card key={profile.id}>
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4 mb-4">
@@ -293,8 +377,9 @@ const Connect = () => {
                   </Button>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="requests">
@@ -314,8 +399,8 @@ const Connect = () => {
                         <h3 className="font-semibold">{request.profiles.full_name}</h3>
                         <div className="flex items-center gap-2">
                           {getConnectionIcon(request.connection_type)}
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {request.connection_type} request
+                          <span className="text-sm text-muted-foreground">
+                            {getConnectionLabel(request.connection_type)} request
                           </span>
                         </div>
                       </div>
@@ -362,8 +447,8 @@ const Connect = () => {
                         <h3 className="font-semibold">{request.profiles.full_name}</h3>
                         <div className="flex items-center gap-2">
                           {getConnectionIcon(request.connection_type)}
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {request.connection_type} request sent
+                          <span className="text-sm text-muted-foreground">
+                            {getConnectionLabel(request.connection_type)} request sent
                           </span>
                         </div>
                       </div>
@@ -398,8 +483,8 @@ const Connect = () => {
                         <h3 className="font-semibold">{otherProfile.full_name}</h3>
                         <div className="flex items-center gap-2">
                           {getConnectionIcon(connection.connection_type)}
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {connection.connection_type}
+                          <span className="text-sm text-muted-foreground">
+                            {getConnectionLabel(connection.connection_type)}
                           </span>
                         </div>
                       </div>
