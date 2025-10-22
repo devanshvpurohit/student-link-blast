@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Heart, Users, Briefcase, Search, UserX, MessageSquare } from 'lucide-react';
+import { Users, Briefcase, UserX, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +33,7 @@ const Connect = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [connectionType, setConnectionType] = useState<'friend' | 'dating' | 'networking'>('friend');
+  const [connectionType, setConnectionType] = useState<'friend' | 'networking'>('friend');
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
   const { toast } = useToast();
@@ -186,7 +186,6 @@ const Connect = () => {
 
   const getConnectionIcon = (type: string) => {
     switch (type) {
-      case 'dating': return <Heart className="h-4 w-4 text-red-500" />;
       case 'networking': return <Briefcase className="h-4 w-4 text-blue-500" />;
       default: return <Users className="h-4 w-4 text-green-500" />;
     }
@@ -236,14 +235,6 @@ const Connect = () => {
                 >
                   <Users className="h-4 w-4" />
                   Friends
-                </Button>
-                <Button
-                  variant={connectionType === 'dating' ? 'default' : 'outline'}
-                  onClick={() => setConnectionType('dating')}
-                  className="gap-2"
-                >
-                  <Heart className="h-4 w-4" />
-                  Dating
                 </Button>
                 <Button
                   variant={connectionType === 'networking' ? 'default' : 'outline'}

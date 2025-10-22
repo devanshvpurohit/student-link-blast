@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, MessageSquare, Bell, Hash, Calendar, Heart, ArrowRight } from 'lucide-react';
+import { Users, MessageSquare, Bell, Hash, Calendar, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
@@ -44,16 +44,12 @@ const Index = () => {
           </CardHeader>
           <CardContent className="pt-0">
             <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              Find friends, dating connections, and networking opportunities on campus.
+              Find friends and networking opportunities on campus.
             </p>
             <div className="flex gap-1 sm:gap-2 mb-3 sm:mb-4 flex-wrap">
               <Badge variant="secondary" className="gap-1 text-xs">
                 <Users className="h-3 w-3" />
                 <span className="hidden xs:inline">Friends</span>
-              </Badge>
-              <Badge variant="secondary" className="gap-1 text-xs">
-                <Heart className="h-3 w-3" />
-                <span className="hidden xs:inline">Dating</span>
               </Badge>
             </div>
             <Button variant="outline" className="w-full gap-2 text-sm">
