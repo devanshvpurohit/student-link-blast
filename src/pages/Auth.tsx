@@ -19,8 +19,8 @@ const Auth = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { user, signUp, signIn, resetPassword, updatePassword } = useAuth();
+  const [formLoading, setFormLoading] = useState(false);
+  const { user, loading, signUp, signIn, resetPassword, updatePassword } = useAuth();
 
   useEffect(() => {
     if (isResetMode) {
@@ -30,20 +30,28 @@ const Auth = () => {
     }
   }, [isResetMode]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   if (user && !isResetPassword) {
     return <Navigate to="/" replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setFormLoading(true);
 
     if (isForgotPassword) {
       await resetPassword(email);
       setIsForgotPassword(false);
     } else if (isResetPassword) {
       if (newPassword !== confirmPassword) {
-        setLoading(false);
+        setFormLoading(false);
         return;
       }
       const result = await updatePassword(newPassword);
@@ -57,7 +65,7 @@ const Auth = () => {
       await signIn(email, password);
     }
 
-    setLoading(false);
+    setFormLoading(false);
   };
 
   const handleModeSwitch = () => {
@@ -119,8 +127,8 @@ const Auth = () => {
                     minLength={6}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Loading...' : 'Update Password'}
+                <Button type="submit" className="w-full" disabled={formLoading}>
+                  {formLoading ? 'Loading...' : 'Update Password'}
                 </Button>
               </>
             ) : isForgotPassword ? (
@@ -135,8 +143,8 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Loading...' : 'Send Reset Link'}
+                <Button type="submit" className="w-full" disabled={formLoading}>
+                  {formLoading ? 'Loading...' : 'Send Reset Link'}
                 </Button>
               </>
             ) : (
@@ -183,8 +191,8 @@ const Auth = () => {
                     Forgot password?
                   </Button>
                 )}
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+                <Button type="submit" className="w-full" disabled={formLoading}>
+                  {formLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
                 </Button>
               </>
             )}
