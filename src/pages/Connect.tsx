@@ -202,12 +202,15 @@ const Connect = () => {
   const myConnections = connections.filter(c => c.status === 'accepted');
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Connect</h1>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">Campus Connect</h1>
+        <p className="text-muted-foreground">Discover and connect with fellow students</p>
+      </div>
       
       <Tabs defaultValue="discover" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="discover">Discover</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="discover">Discover Students</TabsTrigger>
           <TabsTrigger value="requests">
             Requests {pendingRequests.length > 0 && (
               <Badge variant="destructive" className="ml-2">{pendingRequests.length}</Badge>
@@ -218,38 +221,61 @@ const Connect = () => {
               <Badge variant="secondary" className="ml-2">{sentRequests.length}</Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="connections">My Connections</TabsTrigger>
+          <TabsTrigger value="connections">My Network</TabsTrigger>
         </TabsList>
 
         <TabsContent value="discover" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Connection Type</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-2">
-                <Button
-                  variant={connectionType === 'friend' ? 'default' : 'outline'}
-                  onClick={() => setConnectionType('friend')}
-                  className="gap-2"
-                >
-                  <Users className="h-4 w-4" />
-                  Friends
-                </Button>
-                <Button
-                  variant={connectionType === 'networking' ? 'default' : 'outline'}
-                  onClick={() => setConnectionType('networking')}
-                  className="gap-2"
-                >
-                  <Briefcase className="h-4 w-4" />
-                  Networking
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Search Students</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Input
+                  placeholder="Search by name, department, interests..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+              </CardContent>
+            </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {profiles.map((profile) => (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Connection Type</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Button
+                    variant={connectionType === 'friend' ? 'default' : 'outline'}
+                    onClick={() => setConnectionType('friend')}
+                    className="gap-2 flex-1"
+                  >
+                    <Users className="h-4 w-4" />
+                    Classmates
+                  </Button>
+                  <Button
+                    variant={connectionType === 'networking' ? 'default' : 'outline'}
+                    onClick={() => setConnectionType('networking')}
+                    className="gap-2 flex-1"
+                  >
+                    <Briefcase className="h-4 w-4" />
+                    Professional
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {filteredProfiles.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <p className="text-muted-foreground">No students found matching your search</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredProfiles.map((profile) => (
               <Card key={profile.id}>
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4 mb-4">
@@ -289,94 +315,103 @@ const Connect = () => {
                     onClick={() => sendConnectionRequest(profile.id)}
                   >
                     {getConnectionIcon(connectionType)}
-                    Connect
+                    {connectionType === 'friend' ? 'Add Classmate' : 'Connect'}
                   </Button>
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="requests">
-          <div className="space-y-4">
-            {pendingRequests.map((request) => (
-              <Card key={request.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
-                        <AvatarImage src={request.profiles.avatar_url} />
-                        <AvatarFallback>
-                          {request.profiles.full_name?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-semibold">{request.profiles.full_name}</h3>
-                        <div className="flex items-center gap-2">
-                          {getConnectionIcon(request.connection_type)}
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {request.connection_type} request
-                          </span>
-                        </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Connection Requests</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {pendingRequests.map((request) => (
+                <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={request.profiles.avatar_url} />
+                      <AvatarFallback>
+                        {request.profiles.full_name?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold">{request.profiles.full_name}</h3>
+                      {request.profiles.department && (
+                        <p className="text-sm text-muted-foreground">{request.profiles.department}</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        {getConnectionIcon(request.connection_type)}
+                        <span className="text-xs text-muted-foreground capitalize">
+                          {request.connection_type === 'friend' ? 'Classmate' : 'Professional'} request
+                        </span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm"
-                        onClick={() => updateConnectionStatus(request.id, 'accepted')}
-                      >
-                        Accept
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => updateConnectionStatus(request.id, 'declined')}
-                      >
-                        Decline
-                      </Button>
-                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-            {pendingRequests.length === 0 && (
-              <p className="text-center text-muted-foreground">No pending requests</p>
-            )}
-          </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm"
+                      onClick={() => updateConnectionStatus(request.id, 'accepted')}
+                    >
+                      Accept
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => updateConnectionStatus(request.id, 'declined')}
+                    >
+                      Decline
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {pendingRequests.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">No pending connection requests</p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="sent">
-          <div className="space-y-4">
-            {sentRequests.map((request) => (
-              <Card key={request.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
-                        <AvatarImage src={request.profiles.avatar_url} />
-                        <AvatarFallback>
-                          {request.profiles.full_name?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-semibold">{request.profiles.full_name}</h3>
-                        <div className="flex items-center gap-2">
-                          {getConnectionIcon(request.connection_type)}
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {request.connection_type} request sent
-                          </span>
-                        </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Requests</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {sentRequests.map((request) => (
+                <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={request.profiles.avatar_url} />
+                      <AvatarFallback>
+                        {request.profiles.full_name?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold">{request.profiles.full_name}</h3>
+                      {request.profiles.department && (
+                        <p className="text-sm text-muted-foreground">{request.profiles.department}</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        {getConnectionIcon(request.connection_type)}
+                        <span className="text-xs text-muted-foreground capitalize">
+                          {request.connection_type === 'friend' ? 'Classmate' : 'Professional'} request
+                        </span>
                       </div>
                     </div>
-                    <Badge variant="outline">Pending</Badge>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-            {sentRequests.length === 0 && (
-              <p className="text-center text-muted-foreground">No pending requests sent</p>
-            )}
-          </div>
+                  <Badge variant="outline">Pending</Badge>
+                </div>
+              ))}
+              {sentRequests.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">No pending requests sent</p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="connections">
@@ -385,33 +420,44 @@ const Connect = () => {
               const otherProfile = connection.profiles;
               
               return (
-                <Card key={connection.id}>
+                <Card key={connection.id} className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
-                        <AvatarImage src={otherProfile.avatar_url} />
-                        <AvatarFallback>
-                          {otherProfile.full_name?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{otherProfile.full_name}</h3>
-                        <div className="flex items-center gap-2">
-                          {getConnectionIcon(connection.connection_type)}
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {connection.connection_type}
-                          </span>
+                    <div className="flex flex-col space-y-4">
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-14 w-14">
+                          <AvatarImage src={otherProfile.avatar_url} />
+                          <AvatarFallback className="text-lg">
+                            {otherProfile.full_name?.charAt(0) || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{otherProfile.full_name}</h3>
+                          {otherProfile.department && (
+                            <p className="text-sm text-muted-foreground">{otherProfile.department}</p>
+                          )}
+                          {otherProfile.year_of_study && (
+                            <p className="text-xs text-muted-foreground">Year {otherProfile.year_of_study}</p>
+                          )}
                         </div>
                       </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {getConnectionIcon(connection.connection_type)}
+                        <span className="text-sm text-muted-foreground capitalize">
+                          {connection.connection_type === 'friend' ? 'Classmate' : 'Professional'}
+                        </span>
+                      </div>
+
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="flex-1 gap-2">
                           <MessageSquare className="h-4 w-4" />
+                          Message
                         </Button>
                         <Button 
                           size="sm" 
                           variant="outline"
                           onClick={() => removeConnection(connection.id)}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-destructive hover:text-destructive"
                         >
                           <UserX className="h-4 w-4" />
                         </Button>
@@ -422,7 +468,11 @@ const Connect = () => {
               );
             })}
             {myConnections.length === 0 && (
-              <p className="text-center text-muted-foreground col-span-full">No connections yet</p>
+              <Card className="col-span-full">
+                <CardContent className="p-12 text-center">
+                  <p className="text-muted-foreground">Start building your campus network by connecting with fellow students!</p>
+                </CardContent>
+              </Card>
             )}
           </div>
         </TabsContent>
