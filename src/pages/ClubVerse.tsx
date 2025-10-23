@@ -284,27 +284,30 @@ const ClubVerse = () => {
   };
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">ClubVerse</h1>
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold">Campus Clubs</h1>
+          <p className="text-sm text-muted-foreground mt-1">Join and discover student organizations</p>
+        </div>
         
         {user && (
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2 w-full sm:w-auto">
                 <Plus className="h-4 w-4" />
-                <span className="hidden xs:inline">Create Club</span>
+                <span className="hidden xs:inline">Start a Club</span>
                 <span className="xs:hidden">Create</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="mx-4 max-w-md">
               <DialogHeader>
-                <DialogTitle>Create New Club</DialogTitle>
+                <DialogTitle>Start a New Student Club</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
                   <Input
-                    placeholder="Club name"
+                    placeholder="Club name (e.g. Debate Society, Photography Club)"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
@@ -312,7 +315,7 @@ const ClubVerse = () => {
                 
                 <div>
                   <Input
-                    placeholder="Category (optional)"
+                    placeholder="Category (e.g. Academic, Sports, Arts)"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                   />
@@ -320,7 +323,7 @@ const ClubVerse = () => {
                 
                 <div>
                   <Textarea
-                    placeholder="Club description (optional)"
+                    placeholder="Describe your club's mission and activities..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
@@ -336,13 +339,13 @@ const ClubVerse = () => {
                       <SelectItem value="public">
                         <div className="flex items-center gap-2">
                           <Globe className="h-4 w-4" />
-                          Public - Anyone can see and join
+                          Open - All students can join
                         </div>
                       </SelectItem>
                       <SelectItem value="private">
                         <div className="flex items-center gap-2">
                           <Lock className="h-4 w-4" />
-                          Private - Invite only
+                          Closed - Application required
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -350,7 +353,7 @@ const ClubVerse = () => {
                 </div>
                 
                 <Button onClick={createClub} className="w-full">
-                  Create Club
+                  Launch Club
                 </Button>
               </div>
             </DialogContent>
@@ -361,11 +364,11 @@ const ClubVerse = () => {
       <Tabs defaultValue="discover" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="discover" className="text-xs sm:text-sm">
-            <span className="hidden sm:inline">Discover Clubs</span>
-            <span className="sm:hidden">Discover</span>
+            <span className="hidden sm:inline">Explore Clubs</span>
+            <span className="sm:hidden">Explore</span>
           </TabsTrigger>
           <TabsTrigger value="my-clubs" className="text-xs sm:text-sm">
-            <span className="hidden sm:inline">My Clubs ({myClubs.length})</span>
+            <span className="hidden sm:inline">My Organizations ({myClubs.length})</span>
             <span className="sm:hidden">Mine ({myClubs.length})</span>
           </TabsTrigger>
         </TabsList>
@@ -408,7 +411,7 @@ const ClubVerse = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Users className="h-4 w-4" />
-                      {club.member_count || 0} members
+                      {club.member_count || 0} {club.member_count === 1 ? 'student' : 'students'}
                     </div>
                     
                     <div className="flex flex-col xs:flex-row gap-2">
@@ -458,8 +461,9 @@ const ClubVerse = () => {
           
           {clubs.length === 0 && (
             <Card>
-              <CardContent className="p-8 text-center">
-                <p className="text-muted-foreground">No clubs yet. Create the first one!</p>
+              <CardContent className="p-12 text-center">
+                <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                <p className="text-muted-foreground">No student clubs yet. Be the first to start one!</p>
               </CardContent>
             </Card>
           )}

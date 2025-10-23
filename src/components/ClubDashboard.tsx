@@ -201,16 +201,16 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
           <Tabs defaultValue="members" className="flex-1">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="members" className="text-xs sm:text-sm">
-                <span className="hidden sm:inline">Members ({members.length})</span>
-                <span className="sm:hidden">Members</span>
+                <span className="hidden sm:inline">Students ({members.length})</span>
+                <span className="sm:hidden">Students</span>
               </TabsTrigger>
               {canManageMembers && (
                 <TabsTrigger value="pending" className="text-xs sm:text-sm">
-                  <span className="hidden sm:inline">Pending ({pendingMembers.length})</span>
+                  <span className="hidden sm:inline">Applications ({pendingMembers.length})</span>
                   <span className="sm:hidden">Pending</span>
                 </TabsTrigger>
               )}
-              <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+              <TabsTrigger value="overview" className="text-xs sm:text-sm">Info</TabsTrigger>
             </TabsList>
 
             <TabsContent value="members" className="space-y-4 overflow-y-auto max-h-60 sm:max-h-96">
@@ -263,7 +263,7 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
                   <Card>
                     <CardContent className="p-8 text-center">
                       <UserPlus className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-muted-foreground">No pending requests</p>
+                      <p className="text-muted-foreground">No pending membership applications</p>
                     </CardContent>
                   </Card>
                 ) : (
@@ -321,11 +321,12 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <Users className="h-4 w-4" />
-                      Total Members
+                      Active Students
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">{members.length}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Club members</p>
                   </CardContent>
                 </Card>
 
@@ -333,13 +334,14 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      Created
+                      Founded
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-sm">
                       {new Date(club.created_at).toLocaleDateString()}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">Established</p>
                   </CardContent>
                 </Card>
               </div>
@@ -347,7 +349,7 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
               {club.description && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Description</CardTitle>
+                    <CardTitle className="text-sm">About This Club</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground">

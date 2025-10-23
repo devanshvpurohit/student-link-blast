@@ -200,11 +200,11 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <Timer className="h-4 w-4 sm:h-5 sm:w-5" />
-          <span className="hidden sm:inline">{clubName} Chat</span>
+          <span className="hidden sm:inline">{clubName} Discussion</span>
           <span className="sm:hidden">Chat</span>
           <span className="text-xs sm:text-sm font-normal text-muted-foreground">
-            <span className="hidden sm:inline">(Messages vanish after viewing)</span>
-            <span className="sm:hidden">(Vanish)</span>
+            <span className="hidden sm:inline">(Temporary messages)</span>
+            <span className="sm:hidden">(Temp)</span>
           </span>
         </CardTitle>
       </CardHeader>
@@ -215,8 +215,8 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
           {messages.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
               <Timer className="h-8 w-8 mx-auto mb-2" />
-              <p>No messages yet. Start a conversation!</p>
-              <p className="text-sm">Messages will disappear after the timer expires</p>
+              <p>No messages yet. Start the discussion!</p>
+              <p className="text-sm">Messages auto-delete for privacy</p>
             </div>
           ) : (
             messages.map((message) => (
@@ -250,9 +250,9 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
                     )}
                   </div>
                   <p className="text-xs sm:text-sm break-words">{message.content}</p>
-                  {Array.isArray(message.viewed_by) && message.viewed_by.length > 0 && (
+                   {Array.isArray(message.viewed_by) && message.viewed_by.length > 0 && (
                     <div className="text-xs text-muted-foreground mt-1">
-                      Viewed by {message.viewed_by.length} member(s)
+                      Seen by {message.viewed_by.length} {message.viewed_by.length === 1 ? 'student' : 'students'}
                     </div>
                   )}
                 </div>
