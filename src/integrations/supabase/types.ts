@@ -427,7 +427,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      delete_expired_club_messages: { Args: never; Returns: undefined }
+      delete_expired_club_messages: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       mark_club_message_viewed: {
         Args: { message_id: string; user_id: string }
         Returns: undefined
