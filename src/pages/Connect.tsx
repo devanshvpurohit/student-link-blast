@@ -101,18 +101,29 @@ const Connect = () => {
   };
 
   const sendConnectionRequest = async (receiverId: string) => {
-    const { error } = await supabase
+    console.log('Sending connection request:', {
+      requester_id: user?.id,
+      receiver_id: receiverId,
+      connection_type: connectionType,
+      user: user
+    });
+
+    const { data, error } = await supabase
       .from('connections')
       .insert({
         requester_id: user?.id,
         receiver_id: receiverId,
         connection_type: connectionType,
-      });
+      })
+      .select();
+
+    console.log('Connection request result:', { data, error });
 
     if (error) {
+      console.error('Connection request error:', error);
       toast({
         title: "Error",
-        description: "Failed to send connection request",
+        description: error.message || "Failed to send connection request",
         variant: "destructive",
       });
     } else {
