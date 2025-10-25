@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      alumni_opportunities: {
+        Row: {
+          application_url: string | null
+          company: string
+          created_at: string | null
+          description: string
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          job_type: string | null
+          location: string | null
+          posted_by: string
+          title: string
+        }
+        Insert: {
+          application_url?: string | null
+          company: string
+          created_at?: string | null
+          description: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          job_type?: string | null
+          location?: string | null
+          posted_by: string
+          title: string
+        }
+        Update: {
+          application_url?: string | null
+          company?: string
+          created_at?: string | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          job_type?: string | null
+          location?: string | null
+          posted_by?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alumni_opportunities_posted_by_fkey"
+            columns: ["posted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       anon_post_reports: {
         Row: {
           created_at: string
@@ -388,11 +438,17 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          current_company: string | null
+          current_position: string | null
           department: string | null
           email: string
           full_name: string | null
+          graduation_year: number | null
           id: string
           interests: string[] | null
+          is_alumni: boolean | null
+          linkedin_url: string | null
+          open_to_mentoring: boolean | null
           updated_at: string | null
           year_of_study: number | null
         }
@@ -400,11 +456,17 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          current_company?: string | null
+          current_position?: string | null
           department?: string | null
           email: string
           full_name?: string | null
+          graduation_year?: number | null
           id: string
           interests?: string[] | null
+          is_alumni?: boolean | null
+          linkedin_url?: string | null
+          open_to_mentoring?: boolean | null
           updated_at?: string | null
           year_of_study?: number | null
         }
@@ -412,11 +474,17 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          current_company?: string | null
+          current_position?: string | null
           department?: string | null
           email?: string
           full_name?: string | null
+          graduation_year?: number | null
           id?: string
           interests?: string[] | null
+          is_alumni?: boolean | null
+          linkedin_url?: string | null
+          open_to_mentoring?: boolean | null
           updated_at?: string | null
           year_of_study?: number | null
         }
@@ -427,10 +495,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      delete_expired_club_messages: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      delete_expired_club_messages: { Args: never; Returns: undefined }
       mark_club_message_viewed: {
         Args: { message_id: string; user_id: string }
         Returns: undefined

@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Users, Briefcase, UserX, MessageSquare } from 'lucide-react';
+import { Users, Briefcase, UserX, MessageSquare, GraduationCap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +33,7 @@ const Connect = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [connectionType, setConnectionType] = useState<'friend' | 'networking'>('friend');
+  const [connectionType, setConnectionType] = useState<string>('classmate');
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
   const { toast } = useToast();
@@ -245,22 +245,42 @@ const Connect = () => {
                 <CardTitle className="text-lg">Connection Type</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <Button
-                    variant={connectionType === 'friend' ? 'default' : 'outline'}
-                    onClick={() => setConnectionType('friend')}
-                    className="gap-2 flex-1"
+                    variant={connectionType === 'classmate' ? 'default' : 'outline'}
+                    onClick={() => setConnectionType('classmate')}
+                    className="gap-1 text-xs sm:text-sm"
+                    size="sm"
                   >
-                    <Users className="h-4 w-4" />
-                    Classmates
+                    <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Classmate</span>
                   </Button>
                   <Button
-                    variant={connectionType === 'networking' ? 'default' : 'outline'}
-                    onClick={() => setConnectionType('networking')}
-                    className="gap-2 flex-1"
+                    variant={connectionType === 'professional' ? 'default' : 'outline'}
+                    onClick={() => setConnectionType('professional')}
+                    className="gap-1 text-xs sm:text-sm"
+                    size="sm"
                   >
-                    <Briefcase className="h-4 w-4" />
-                    Professional
+                    <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Professional</span>
+                  </Button>
+                  <Button
+                    variant={connectionType === 'mentor' ? 'default' : 'outline'}
+                    onClick={() => setConnectionType('mentor')}
+                    className="gap-1 text-xs sm:text-sm"
+                    size="sm"
+                  >
+                    <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Mentor</span>
+                  </Button>
+                  <Button
+                    variant={connectionType === 'alumni' ? 'default' : 'outline'}
+                    onClick={() => setConnectionType('alumni')}
+                    className="gap-1 text-xs sm:text-sm"
+                    size="sm"
+                  >
+                    <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Alumni</span>
                   </Button>
                 </div>
               </CardContent>

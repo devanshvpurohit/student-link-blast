@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, User, Save, Plus, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Camera, User, Save, Plus, X, GraduationCap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +21,12 @@ interface Profile {
   bio?: string;
   year_of_study?: number;
   interests?: string[];
+  is_alumni: boolean;
+  graduation_year?: number;
+  current_company?: string;
+  current_position?: string;
+  linkedin_url?: string;
+  open_to_mentoring: boolean;
 }
 
 const Profile = () => {
@@ -28,6 +35,7 @@ const Profile = () => {
   const [editedProfile, setEditedProfile] = useState<Partial<Profile>>({});
   const [newInterest, setNewInterest] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [showAlumniFields, setShowAlumniFields] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -53,6 +61,7 @@ const Profile = () => {
     } else {
       setProfile(data);
       setEditedProfile(data);
+      setShowAlumniFields(data.is_alumni || false);
     }
   };
 
@@ -65,6 +74,12 @@ const Profile = () => {
         bio: editedProfile.bio,
         year_of_study: editedProfile.year_of_study,
         interests: editedProfile.interests,
+        is_alumni: editedProfile.is_alumni,
+        graduation_year: editedProfile.graduation_year,
+        current_company: editedProfile.current_company,
+        current_position: editedProfile.current_position,
+        linkedin_url: editedProfile.linkedin_url,
+        open_to_mentoring: editedProfile.open_to_mentoring,
       })
       .eq('id', user?.id);
 
@@ -312,6 +327,105 @@ const Profile = () => {
                 <p className="text-muted-foreground">{profile.bio || 'No bio added yet'}</p>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Alumni Information */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Alumni Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Alumni Status</label>
+              {isEditing ? (
+                <Switch
+                  checked={editedProfile.is_alumni || false}
+                  onCheckedChange={(checked) => {
+                    setEditedProfile({ ...editedProfile, is_alumni: checked });
+                    setShowAlumniFields(checked);
+                  }}
+                />
+              ) : (
+                <Badge variant={profile?.is_alumni ? "default" : "secondary"}>
+                  {profile?.is_alumni ? "Alumni" : "Current Student"}
+                </Badge>
+              )}
+            </div>
+
+            {(showAlumniFields || profile?.is_alumni) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Graduation Year</label>
+                  {isEditing ? (
+                    <Input
+                      type="number"
+                      value={editedProfile.graduation_year || ''}
+                      onChange={(e) => setEditedProfile({ ...editedProfile, graduation_year: parseInt(e.target.value) || undefined })}
+                      placeholder="e.g. 2020"
+                    />
+                  ) : (
+                    <p className="text-muted-foreground">{profile?.graduation_year || 'Not set'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Current Company</label>
+                  {isEditing ? (
+                    <Input
+                      value={editedProfile.current_company || ''}
+                      onChange={(e) => setEditedProfile({ ...editedProfile, current_company: e.target.value })}
+                      placeholder="Your employer"
+                    />
+                  ) : (
+                    <p className="text-muted-foreground">{profile?.current_company || 'Not set'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Current Position</label>
+                  {isEditing ? (
+                    <Input
+                      value={editedProfile.current_position || ''}
+                      onChange={(e) => setEditedProfile({ ...editedProfile, current_position: e.target.value })}
+                      placeholder="Your job title"
+                    />
+                  ) : (
+                    <p className="text-muted-foreground">{profile?.current_position || 'Not set'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">LinkedIn Profile</label>
+                  {isEditing ? (
+                    <Input
+                      value={editedProfile.linkedin_url || ''}
+                      onChange={(e) => setEditedProfile({ ...editedProfile, linkedin_url: e.target.value })}
+                      placeholder="https://linkedin.com/in/..."
+                    />
+                  ) : (
+                    <p className="text-muted-foreground">{profile?.linkedin_url || 'Not set'}</p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between sm:col-span-2">
+                  <label className="text-sm font-medium">Open to Mentoring</label>
+                  {isEditing ? (
+                    <Switch
+                      checked={editedProfile.open_to_mentoring || false}
+                      onCheckedChange={(checked) => setEditedProfile({ ...editedProfile, open_to_mentoring: checked })}
+                    />
+                  ) : (
+                    <Badge variant={profile?.open_to_mentoring ? "default" : "secondary"}>
+                      {profile?.open_to_mentoring ? "Yes" : "No"}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
