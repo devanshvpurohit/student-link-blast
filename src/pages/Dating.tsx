@@ -11,9 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Heart, X, MessageCircle, Sparkles, Settings, Users } from "lucide-react";
+import { Heart, X, MessageCircle, Sparkles, Settings, Users, TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DatingChat } from "@/components/DatingChat";
 
 interface DatingProfile {
   id: string;
@@ -33,6 +35,7 @@ interface Match {
   user_id: string;
   liked_user_id: string;
   is_match: boolean;
+  compatibility_score: number;
   created_at: string;
   profiles: DatingProfile;
 }
@@ -45,6 +48,7 @@ const Dating = () => {
   const [datingEnabled, setDatingEnabled] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [likedUsers, setLikedUsers] = useState<Set<string>>(new Set());
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   
   const [settings, setSettings] = useState({
     dating_enabled: false,
@@ -118,8 +122,25 @@ const Dating = () => {
       return;
     }
 
-    // Filter out already liked users
-    const filtered = (data || []).filter(p => !likedUsers.has(p.id));
+    // Calculate compatibility scores and filter
+    const profilesWithScores = await Promise.all(
+      (data || []).map(async (profile) => {
+        const { data: scoreData } = await supabase.rpc(
+          "calculate_compatibility_score",
+          {
+            user1_id: user.id,
+            user2_id: profile.id,
+          }
+        );
+        return { ...profile, score: scoreData || 0 };
+      })
+    );
+
+    // Sort by compatibility and filter out liked users
+    const filtered = profilesWithScores
+      .filter((p) => !likedUsers.has(p.id))
+      .sort((a, b) => b.score - a.score);
+
     setProfiles(filtered);
   };
 
@@ -203,37 +224,40 @@ const Dating = () => {
   const handleLike = async (likedUserId: string) => {
     if (!user) return;
 
-    const { error } = await supabase
-      .from("dating_matches")
-      .insert({
-        user_id: user.id,
-        liked_user_id: likedUserId,
-      });
+    // Calculate compatibility score
+    const { data: scoreData } = await supabase.rpc("calculate_compatibility_score", {
+      user1_id: user.id,
+      user2_id: likedUserId,
+    });
+
+    const { error } = await supabase.from("dating_matches").insert({
+      user_id: user.id,
+      liked_user_id: likedUserId,
+      compatibility_score: scoreData || 0,
+    });
 
     if (error) {
       toast.error("Failed to like profile");
       return;
     }
 
-    // Add to liked users set
-    setLikedUsers(prev => new Set([...prev, likedUserId]));
-    
-    // Check if it's a match
+    setLikedUsers((prev) => new Set([...prev, likedUserId]));
+
     const { data: matchData } = await supabase
       .from("dating_matches")
-      .select("is_match")
+      .select("is_match, compatibility_score")
       .eq("user_id", user.id)
       .eq("liked_user_id", likedUserId)
       .single();
 
     if (matchData?.is_match) {
       toast.success("It's a match! 🎉", {
-        description: "You can now start chatting!"
+        description: `${matchData.compatibility_score}% compatibility - Start chatting now!`,
       });
       fetchMatches();
     }
 
-    setCurrentIndex(prev => prev + 1);
+    setCurrentIndex((prev) => prev + 1);
   };
 
   const handleSkip = () => {
@@ -241,6 +265,22 @@ const Dating = () => {
   };
 
   const currentProfile = profiles[currentIndex];
+
+  if (selectedMatch) {
+    return (
+      <div className="container mx-auto p-6 max-w-4xl">
+        <DatingChat
+          matchId={selectedMatch.id}
+          otherUser={{
+            id: selectedMatch.profiles.id,
+            full_name: selectedMatch.profiles.full_name,
+            avatar_url: selectedMatch.profiles.avatar_url,
+          }}
+          onBack={() => setSelectedMatch(null)}
+        />
+      </div>
+    );
+  }
 
   if (!datingEnabled && !showSettings) {
     return (
@@ -359,10 +399,25 @@ const Dating = () => {
                     <p className="text-sm">{currentProfile.dating_bio}</p>
                   )}
 
+                  {(currentProfile as any).score !== undefined && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Compatibility</span>
+                        <span className="font-semibold flex items-center gap-1">
+                          <TrendingUp className="h-4 w-4" />
+                          {(currentProfile as any).score}%
+                        </span>
+                      </div>
+                      <Progress value={(currentProfile as any).score} className="h-2" />
+                    </div>
+                  )}
+
                   {currentProfile.interests && currentProfile.interests.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {currentProfile.interests.map((interest, idx) => (
-                        <Badge key={idx} variant="secondary">{interest}</Badge>
+                        <Badge key={idx} variant="secondary">
+                          {interest}
+                        </Badge>
                       ))}
                     </div>
                   )}
@@ -426,6 +481,12 @@ const Dating = () => {
                             {match.profiles.department}
                           </p>
                         )}
+                        <div className="flex items-center gap-1 mt-1">
+                          <TrendingUp className="h-3 w-3 text-primary" />
+                          <span className="text-xs font-medium text-primary">
+                            {match.compatibility_score}% match
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </CardHeader>
@@ -442,7 +503,11 @@ const Dating = () => {
                         ))}
                       </div>
                     )}
-                    <Button className="w-full" size="sm">
+                    <Button
+                      className="w-full"
+                      size="sm"
+                      onClick={() => setSelectedMatch(match)}
+                    >
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Message
                     </Button>

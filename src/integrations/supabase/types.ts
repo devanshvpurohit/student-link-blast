@@ -162,6 +162,54 @@ export type Database = {
           },
         ]
       }
+      campus_events: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          end_time: string | null
+          event_type: string
+          id: string
+          image_url: string | null
+          is_public: boolean | null
+          location: string | null
+          max_attendees: number | null
+          start_time: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          end_time?: string | null
+          event_type: string
+          id?: string
+          image_url?: string | null
+          is_public?: boolean | null
+          location?: string | null
+          max_attendees?: number | null
+          start_time: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          end_time?: string | null
+          event_type?: string
+          id?: string
+          image_url?: string | null
+          is_public?: boolean | null
+          location?: string | null
+          max_attendees?: number | null
+          start_time?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       club_members: {
         Row: {
           club_id: string
@@ -344,8 +392,38 @@ export type Database = {
           },
         ]
       }
+      dating_conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          match_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          match_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          match_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dating_conversations_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "dating_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dating_matches: {
         Row: {
+          compatibility_score: number | null
           created_at: string | null
           id: string
           is_match: boolean | null
@@ -353,6 +431,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          compatibility_score?: number | null
           created_at?: string | null
           id?: string
           is_match?: boolean | null
@@ -360,6 +439,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          compatibility_score?: number | null
           created_at?: string | null
           id?: string
           is_match?: boolean | null
@@ -367,6 +447,73 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      dating_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dating_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "dating_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_rsvps: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "campus_events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -457,6 +604,33 @@ export type Database = {
           },
         ]
       }
+      profile_photos: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_primary: boolean | null
+          photo_url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_primary?: boolean | null
+          photo_url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_primary?: boolean | null
+          photo_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -480,6 +654,8 @@ export type Database = {
           linkedin_url: string | null
           open_to_mentoring: boolean | null
           updated_at: string | null
+          verification_status: string | null
+          verified_at: string | null
           year_of_study: number | null
         }
         Insert: {
@@ -504,6 +680,8 @@ export type Database = {
           linkedin_url?: string | null
           open_to_mentoring?: boolean | null
           updated_at?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
           year_of_study?: number | null
         }
         Update: {
@@ -528,6 +706,8 @@ export type Database = {
           linkedin_url?: string | null
           open_to_mentoring?: boolean | null
           updated_at?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
           year_of_study?: number | null
         }
         Relationships: []
@@ -537,6 +717,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_compatibility_score: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: number
+      }
       delete_expired_club_messages: { Args: never; Returns: undefined }
       mark_club_message_viewed: {
         Args: { message_id: string; user_id: string }

@@ -11,6 +11,8 @@ import { Camera, User, Save, Plus, X, GraduationCap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { PhotoGallery } from '@/components/PhotoGallery';
+import { VerificationBadge } from '@/components/VerificationBadge';
 
 interface Profile {
   id: string;
@@ -27,6 +29,14 @@ interface Profile {
   current_position?: string;
   linkedin_url?: string;
   open_to_mentoring: boolean;
+  verification_status?: 'unverified' | 'pending' | 'verified';
+}
+
+interface ProfilePhoto {
+  id: string;
+  photo_url: string;
+  is_primary: boolean;
+  display_order: number;
 }
 
 const Profile = () => {
@@ -36,12 +46,14 @@ const Profile = () => {
   const [newInterest, setNewInterest] = useState('');
   const [uploading, setUploading] = useState(false);
   const [showAlumniFields, setShowAlumniFields] = useState(false);
+  const [profilePhotos, setProfilePhotos] = useState<ProfilePhoto[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchPhotos();
     }
   }, [user]);
 
@@ -59,9 +71,27 @@ const Profile = () => {
         variant: "destructive",
       });
     } else {
-      setProfile(data);
-      setEditedProfile(data);
+      const profileData = {
+        ...data,
+        verification_status: (data.verification_status as 'unverified' | 'pending' | 'verified') || 'unverified'
+      };
+      setProfile(profileData);
+      setEditedProfile(profileData);
       setShowAlumniFields(data.is_alumni || false);
+    }
+  };
+
+  const fetchPhotos = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('profile_photos')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('display_order', { ascending: true });
+
+    if (!error && data) {
+      setProfilePhotos(data);
     }
   };
 
@@ -176,7 +206,12 @@ const Profile = () => {
   return (
     <div className="p-3 sm:p-6 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
-        <h1 className="text-2xl sm:text-3xl font-bold">My Profile</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold">My Profile</h1>
+          {profile.verification_status && (
+            <VerificationBadge status={profile.verification_status} />
+          )}
+        </div>
         {!isEditing ? (
           <Button onClick={() => setIsEditing(true)} className="gap-2 w-full sm:w-auto">
             <User className="h-4 w-4" />
@@ -233,6 +268,21 @@ const Profile = () => {
             {uploading && (
               <p className="text-sm text-muted-foreground">Uploading...</p>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Photo Gallery */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Photo Gallery</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PhotoGallery
+              userId={user?.id || ''}
+              photos={profilePhotos}
+              isEditing={isEditing}
+              onPhotosUpdate={fetchPhotos}
+            />
           </CardContent>
         </Card>
 

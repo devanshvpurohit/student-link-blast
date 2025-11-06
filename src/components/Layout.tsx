@@ -20,9 +20,10 @@ const Layout = ({ children }: LayoutProps) => {
     { icon: Users, label: 'Connect', path: '/connect' },
     { icon: Bell, label: 'Pulse', path: '/pulse' },
     { icon: Hash, label: 'AnonySpace', path: '/anonyspace' },
-    { icon: Calendar, label: 'ClubVerse', path: '/clubverse' },
-    { icon: GraduationCap, label: 'Alumni', path: '/alumni' },
+    { icon: Calendar, label: 'Events', path: '/events' },
+    { icon: GraduationCap, label: 'ClubVerse', path: '/clubverse' },
     { icon: Sparkles, label: 'Dating', path: '/dating' },
+    { icon: MessageSquare, label: 'Alumni', path: '/alumni' },
     { icon: MessageSquare, label: 'Messages', path: '/messages' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
