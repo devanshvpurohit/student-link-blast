@@ -344,6 +344,30 @@ export type Database = {
           },
         ]
       }
+      dating_matches: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_match: boolean | null
+          liked_user_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_match?: boolean | null
+          liked_user_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_match?: boolean | null
+          liked_user_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           connection_id: string
@@ -440,6 +464,12 @@ export type Database = {
           created_at: string | null
           current_company: string | null
           current_position: string | null
+          dating_age_max: number | null
+          dating_age_min: number | null
+          dating_bio: string | null
+          dating_enabled: boolean | null
+          dating_gender: string | null
+          dating_looking_for: string | null
           department: string | null
           email: string
           full_name: string | null
@@ -458,6 +488,12 @@ export type Database = {
           created_at?: string | null
           current_company?: string | null
           current_position?: string | null
+          dating_age_max?: number | null
+          dating_age_min?: number | null
+          dating_bio?: string | null
+          dating_enabled?: boolean | null
+          dating_gender?: string | null
+          dating_looking_for?: string | null
           department?: string | null
           email: string
           full_name?: string | null
@@ -476,6 +512,12 @@ export type Database = {
           created_at?: string | null
           current_company?: string | null
           current_position?: string | null
+          dating_age_max?: number | null
+          dating_age_min?: number | null
+          dating_bio?: string | null
+          dating_enabled?: boolean | null
+          dating_gender?: string | null
+          dating_looking_for?: string | null
           department?: string | null
           email?: string
           full_name?: string | null

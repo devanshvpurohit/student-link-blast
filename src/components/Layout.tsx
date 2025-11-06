@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { Users, MessageSquare, Bell, Hash, Calendar, User, Hand, GraduationCap } from 'lucide-react';
+import { Users, MessageSquare, Bell, Hash, Calendar, User, Hand, GraduationCap, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { HandGestureControl } from '@/components/HandGestureControl';
@@ -22,6 +22,7 @@ const Layout = ({ children }: LayoutProps) => {
     { icon: Hash, label: 'AnonySpace', path: '/anonyspace' },
     { icon: Calendar, label: 'ClubVerse', path: '/clubverse' },
     { icon: GraduationCap, label: 'Alumni', path: '/alumni' },
+    { icon: Sparkles, label: 'Dating', path: '/dating' },
     { icon: MessageSquare, label: 'Messages', path: '/messages' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];

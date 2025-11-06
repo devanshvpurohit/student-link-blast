@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Briefcase, Users, GraduationCap, Calendar, MapPin, ExternalLink, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -156,15 +157,15 @@ const Alumni = () => {
       profile.department?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getJobTypeBadge = (type: string) => {
-    const colors: Record<string, string> = {
-      "full-time": "bg-green-500/10 text-green-500",
-      "part-time": "bg-blue-500/10 text-blue-500",
-      internship: "bg-purple-500/10 text-purple-500",
-      contract: "bg-orange-500/10 text-orange-500",
-      volunteer: "bg-pink-500/10 text-pink-500",
+  const getJobTypeVariant = (type: string): "default" | "secondary" | "outline" => {
+    const variants: Record<string, "default" | "secondary" | "outline"> = {
+      "full-time": "default",
+      "part-time": "secondary",
+      internship: "outline",
+      contract: "secondary",
+      volunteer: "outline",
     };
-    return colors[type] || "";
+    return variants[type] || "secondary";
   };
 
   return (
@@ -301,8 +302,8 @@ const Alumni = () => {
                           {opp.company}
                         </CardDescription>
                       </div>
-                      <Badge className={getJobTypeBadge(opp.job_type)}>
-                        {opp.job_type}
+                      <Badge variant={getJobTypeVariant(opp.job_type)}>
+                        {opp.job_type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -354,9 +355,12 @@ const Alumni = () => {
                 <Card key={profile.id}>
                   <CardHeader>
                     <div className="flex items-start gap-4">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-xl font-semibold">
-                        {profile.full_name?.charAt(0) || "?"}
-                      </div>
+                      <Avatar className="h-14 w-14">
+                        <AvatarImage src={profile.avatar_url || undefined} />
+                        <AvatarFallback className="text-xl font-semibold bg-gradient-to-br from-primary/20 to-accent/20">
+                          {profile.full_name?.charAt(0) || "?"}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="flex-1">
                         <CardTitle className="text-lg">{profile.full_name}</CardTitle>
                         {profile.current_position && (
