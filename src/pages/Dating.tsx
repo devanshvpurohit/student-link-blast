@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -11,11 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Heart, X, MessageCircle, Sparkles, Settings, Users, TrendingUp } from "lucide-react";
+import { Heart, MessageCircle, Sparkles, Settings, Users, TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DatingChat } from "@/components/DatingChat";
+import { SwipeCard, SwipeCardRef } from "@/components/SwipeCard";
 
 interface DatingProfile {
   id: string;
@@ -264,6 +264,7 @@ const Dating = () => {
     setCurrentIndex(prev => prev + 1);
   };
 
+  const swipeCardRef = useRef<SwipeCardRef>(null);
   const currentProfile = profiles[currentIndex];
 
   if (selectedMatch) {
@@ -366,81 +367,14 @@ const Dating = () => {
         </TabsList>
 
         <TabsContent value="discover" className="mt-6">
-          <div className="flex justify-center">
+          <div className="flex justify-center items-center min-h-[500px]">
             {currentProfile ? (
-              <Card className="w-full max-w-md overflow-hidden border-2">
-                <div className="relative h-80 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  {currentProfile.avatar_url ? (
-                    <img 
-                      src={currentProfile.avatar_url} 
-                      alt={currentProfile.full_name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="text-8xl font-bold text-primary/40">
-                      {currentProfile.full_name?.charAt(0) || "?"}
-                    </div>
-                  )}
-                </div>
-                <CardContent className="p-6 space-y-4">
-                  <div>
-                    <h2 className="text-2xl font-bold">{currentProfile.full_name}</h2>
-                    {currentProfile.department && (
-                      <p className="text-muted-foreground">{currentProfile.department}</p>
-                    )}
-                    {currentProfile.year_of_study && (
-                      <p className="text-sm text-muted-foreground">
-                        Year {currentProfile.year_of_study}
-                      </p>
-                    )}
-                  </div>
-
-                  {currentProfile.dating_bio && (
-                    <p className="text-sm">{currentProfile.dating_bio}</p>
-                  )}
-
-                  {(currentProfile as any).score !== undefined && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Compatibility</span>
-                        <span className="font-semibold flex items-center gap-1">
-                          <TrendingUp className="h-4 w-4" />
-                          {(currentProfile as any).score}%
-                        </span>
-                      </div>
-                      <Progress value={(currentProfile as any).score} className="h-2" />
-                    </div>
-                  )}
-
-                  {currentProfile.interests && currentProfile.interests.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {currentProfile.interests.map((interest, idx) => (
-                        <Badge key={idx} variant="secondary">
-                          {interest}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex gap-4 pt-4">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="flex-1 border-2"
-                      onClick={handleSkip}
-                    >
-                      <X className="h-6 w-6" />
-                    </Button>
-                    <Button
-                      size="lg"
-                      className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
-                      onClick={() => handleLike(currentProfile.id)}
-                    >
-                      <Heart className="h-6 w-6 fill-current" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <SwipeCard
+                ref={swipeCardRef}
+                profile={{ ...currentProfile, score: (currentProfile as any).score }}
+                onLike={() => handleLike(currentProfile.id)}
+                onSkip={handleSkip}
+              />
             ) : (
               <Card className="w-full max-w-md">
                 <CardContent className="p-12 text-center text-muted-foreground">
