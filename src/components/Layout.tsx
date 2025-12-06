@@ -76,7 +76,7 @@ const Layout = ({ children }: LayoutProps) => {
           </h1>
           
           <div className="flex items-center gap-2 md:gap-3">
-            {installable && (
+            {installable ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -85,6 +85,16 @@ const Layout = ({ children }: LayoutProps) => {
               >
                 <Download className="h-4 w-4" />
                 <span className="hidden sm:inline">Install</span>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/install')}
+                className="gap-2 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Get App</span>
               </Button>
             )}
             <Button
