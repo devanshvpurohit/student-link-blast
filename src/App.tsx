@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import Alumni from "./pages/Alumni";
 import Dating from "./pages/Dating";
 import Events from "./pages/Events";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/alumni" element={<Alumni />} />
           <Route path="/dating" element={<Dating />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/install" element={<Install />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
