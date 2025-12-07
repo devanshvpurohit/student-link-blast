@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { VoiceNoteRecorder } from '@/components/VoiceNoteRecorder';
 import { VoiceNotePlayer } from '@/components/VoiceNotePlayer';
+import { ImagePicker } from '@/components/ImagePicker';
+import { ImageMessage } from '@/components/ImageMessage';
 
 interface Connection {
   id: string;
@@ -28,6 +30,7 @@ interface Connection {
     created_at: string;
     sender_id: string;
     voice_note_url?: string;
+    image_url?: string;
   };
 }
 
@@ -38,6 +41,7 @@ interface Message {
   created_at: string;
   voice_note_url?: string;
   voice_note_duration?: number;
+  image_url?: string;
   profiles: {
     full_name: string;
     avatar_url?: string;
@@ -51,8 +55,17 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (user) {
@@ -112,7 +125,7 @@ const Messages = () => {
       (data || []).map(async (connection) => {
         const { data: lastMessage } = await supabase
           .from('messages')
-          .select('content, created_at, sender_id, voice_note_url')
+          .select('content, created_at, sender_id, voice_note_url, image_url')
           .eq('connection_id', connection.id)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -155,31 +168,54 @@ const Messages = () => {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConnection) return;
+    if ((!newMessage.trim() && !selectedImage) || !selectedConnection || !user) return;
 
     setLoading(true);
 
-    const { error } = await supabase
-      .from('messages')
-      .insert({
-        connection_id: selectedConnection.id,
-        sender_id: user?.id,
-        content: newMessage.trim(),
-      });
+    try {
+      let imageUrl: string | null = null;
 
-    if (error) {
+      // Upload image if selected
+      if (selectedImage) {
+        const fileName = `${user.id}/${Date.now()}-${selectedImage.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('chat-images')
+          .upload(fileName, selectedImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('chat-images')
+          .getPublicUrl(uploadData.path);
+
+        imageUrl = urlData.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          connection_id: selectedConnection.id,
+          sender_id: user.id,
+          content: newMessage.trim() || (imageUrl ? '' : ''),
+          image_url: imageUrl,
+        });
+
+      if (error) throw error;
+
+      setNewMessage('');
+      setSelectedImage(null);
+      fetchMessages(selectedConnection.id);
+      fetchConnections();
+    } catch (error) {
+      console.error('Error sending message:', error);
       toast({
         title: "Error",
         description: "Failed to send message",
         variant: "destructive",
       });
-    } else {
-      setNewMessage('');
-      fetchMessages(selectedConnection.id);
-      fetchConnections(); // Update last message in sidebar
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -282,7 +318,11 @@ const Messages = () => {
                       <div className="text-xs lg:text-sm text-muted-foreground">
                         <p className="truncate">
                           {connection.last_message.sender_id === user?.id && 'You: '}
-                          {connection.last_message.voice_note_url ? '🎤 Voice message' : connection.last_message.content}
+                          {connection.last_message.voice_note_url 
+                            ? '🎤 Voice message' 
+                            : connection.last_message.image_url 
+                              ? '📷 Photo'
+                              : connection.last_message.content}
                         </p>
                         <p className="text-xs">
                           {formatDistanceToNow(new Date(connection.last_message.created_at), { addSuffix: true })}
@@ -344,6 +384,8 @@ const Messages = () => {
                               audioUrl={message.voice_note_url} 
                               duration={message.voice_note_duration}
                             />
+                          ) : message.image_url ? (
+                            <ImageMessage imageUrl={message.image_url} />
                           ) : (
                             <p className="text-sm lg:text-base whitespace-pre-wrap">{message.content}</p>
                           )}
@@ -366,27 +408,59 @@ const Messages = () => {
                   onCancel={() => setShowVoiceRecorder(false)}
                 />
               ) : (
-                <div className="flex space-x-2">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Type a message..."
-                    disabled={loading}
-                    className="text-sm lg:text-base"
-                  />
-                  <div className="flex space-x-1">
-                    <VoiceNoteRecorder
-                      onSendVoiceNote={handleSendVoiceNote}
+                <div className="space-y-2">
+                  {/* Image Preview */}
+                  {selectedImage && (
+                    <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                      <div className="relative w-16 h-16 rounded-lg overflow-hidden">
+                        <img 
+                          src={URL.createObjectURL(selectedImage)} 
+                          alt="Selected" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-sm text-muted-foreground flex-1 truncate">
+                        {selectedImage.name}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedImage(null)}
+                        className="h-8 w-8 p-0"
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  )}
+                  
+                  <div className="flex space-x-2">
+                    <Input
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Type a message..."
+                      disabled={loading}
+                      className="text-sm lg:text-base"
                     />
-                    <Button 
-                      onClick={sendMessage} 
-                      disabled={loading || !newMessage.trim()}
-                      size="sm"
-                      className="px-2 lg:px-4"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                    <div className="flex space-x-1">
+                      <ImagePicker
+                        onImageSelect={setSelectedImage}
+                        selectedImage={null}
+                        onClear={() => setSelectedImage(null)}
+                        disabled={loading}
+                      />
+                      <VoiceNoteRecorder
+                        onSendVoiceNote={handleSendVoiceNote}
+                      />
+                      <Button 
+                        onClick={sendMessage} 
+                        disabled={loading || (!newMessage.trim() && !selectedImage)}
+                        size="sm"
+                        className="px-2 lg:px-4"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
