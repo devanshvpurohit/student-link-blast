@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -30,34 +31,62 @@ const Auth = () => {
     }
   }, [isResetMode]);
 
+  // Redirect authenticated users (except during password reset)
   if (user && !isResetPassword) {
     return <Navigate to="/" replace />;
   }
+
+  // Validate password strength
+  const validatePassword = (pwd: string): string | null => {
+    if (pwd.length < 6) return 'Password must be at least 6 characters';
+    return null;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (isForgotPassword) {
-      await resetPassword(email);
-      setIsForgotPassword(false);
-    } else if (isResetPassword) {
-      if (newPassword !== confirmPassword) {
-        setLoading(false);
-        return;
+    try {
+      if (isForgotPassword) {
+        await resetPassword(email);
+        setIsForgotPassword(false);
+        setEmail(''); // Clear email after sending
+      } else if (isResetPassword) {
+        // Validate new password
+        const pwdError = validatePassword(newPassword);
+        if (pwdError) {
+          toast.error(pwdError);
+          setLoading(false);
+          return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+          toast.error('Passwords do not match');
+          setLoading(false);
+          return;
+        }
+        
+        const result = await updatePassword(newPassword);
+        if (!result.error) {
+          setIsResetPassword(false);
+          // Clear URL params and redirect
+          window.history.replaceState({}, '', '/auth');
+        }
+      } else if (isSignUp) {
+        // Validate password for signup
+        const pwdError = validatePassword(password);
+        if (pwdError) {
+          toast.error(pwdError);
+          setLoading(false);
+          return;
+        }
+        await signUp(email, password, fullName);
+      } else {
+        await signIn(email, password);
       }
-      const result = await updatePassword(newPassword);
-      if (!result.error) {
-        setIsResetPassword(false);
-        window.history.replaceState({}, '', '/auth');
-      }
-    } else if (isSignUp) {
-      await signUp(email, password, fullName);
-    } else {
-      await signIn(email, password);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleModeSwitch = () => {
