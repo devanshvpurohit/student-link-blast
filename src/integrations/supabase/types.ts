@@ -521,6 +521,7 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          image_url: string | null
           sender_id: string
           voice_note_duration: number | null
           voice_note_url: string | null
@@ -530,6 +531,7 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          image_url?: string | null
           sender_id: string
           voice_note_duration?: number | null
           voice_note_url?: string | null
@@ -539,6 +541,7 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          image_url?: string | null
           sender_id?: string
           voice_note_duration?: number | null
           voice_note_url?: string | null
