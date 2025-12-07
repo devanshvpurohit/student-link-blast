@@ -3,6 +3,22 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+/**
+ * Get the current app URL dynamically
+ * This ensures auth redirects work correctly in all environments:
+ * - localhost during development
+ * - preview URLs (*.lovable.app)
+ * - production/custom domains
+ */
+const getAppUrl = (): string => {
+  // In browser, use the current origin
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  // Fallback for SSR (shouldn't happen in this app)
+  return 'https://localhost:3000';
+};
+
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -31,11 +47,14 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      // Use dynamic URL for proper redirect in all environments
+      const redirectUrl = `${getAppUrl()}/`;
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
           },
@@ -105,15 +124,24 @@ export const useAuth = () => {
 
   const resetPassword = async (email: string) => {
     try {
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      // Use dynamic URL for proper redirect in all environments
+      const redirectUrl = `${getAppUrl()}/auth?reset=true`;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
+        redirectTo: redirectUrl,
       });
 
       if (error) throw error;
 
       toast({
         title: "Password reset email sent",
-        description: "Please check your email for the password reset link.",
+        description: "Please check your email for the password reset link. The link expires in 1 hour.",
       });
 
       return { error: null };

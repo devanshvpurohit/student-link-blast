@@ -1,1 +1,4 @@
 project_id = "umiqvigdibyvieslahcb"
+
+[functions.gale-shapley-matching]
+verify_jwt = true

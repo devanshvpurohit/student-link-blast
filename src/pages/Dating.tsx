@@ -5,17 +5,18 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Heart, MessageCircle, Sparkles, Settings, Users, TrendingUp } from "lucide-react";
+import { Heart, MessageCircle, Sparkles, Settings, Users, TrendingUp, Wand2, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DatingChat } from "@/components/DatingChat";
 import { SwipeCard, SwipeCardRef } from "@/components/SwipeCard";
+import { runStableMatching } from "@/lib/matching";
 
 interface DatingProfile {
   id: string;
@@ -49,6 +50,8 @@ const Dating = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [likedUsers, setLikedUsers] = useState<Set<string>>(new Set());
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [showMatchmaking, setShowMatchmaking] = useState(false);
+  const [runningMatchmaking, setRunningMatchmaking] = useState(false);
   
   const [settings, setSettings] = useState({
     dating_enabled: false,
@@ -221,6 +224,34 @@ const Dating = () => {
     }
   };
 
+  /**
+   * Run the Gale-Shapley stable matching algorithm
+   * This creates optimal matches based on mutual compatibility
+   */
+  const handleRunMatchmaking = async () => {
+    setRunningMatchmaking(true);
+    try {
+      const result = await runStableMatching();
+      
+      if (result.success) {
+        toast.success("Matchmaking complete! 🎉", {
+          description: result.message || "Check your matches tab for new connections",
+        });
+        // Refresh matches after algorithm runs
+        await fetchMatches();
+        setShowMatchmaking(false);
+      } else {
+        toast.error("Matchmaking failed", {
+          description: result.error || "Please try again later",
+        });
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setRunningMatchmaking(false);
+    }
+  };
+
   const handleLike = async (likedUserId: string) => {
     if (!user) return;
 
@@ -343,15 +374,25 @@ const Dating = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap gap-2 justify-between items-center mb-6">
         <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Heart className="h-8 w-8 text-rose-500" />
+          <Heart className="h-8 w-8 text-dating" />
           Campus Dating
         </h1>
-        <Button variant="outline" onClick={() => setShowSettings(true)}>
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowMatchmaking(true)}
+            className="border-dating/30 text-dating hover:bg-dating/10"
+          >
+            <Wand2 className="h-4 w-4 mr-2" />
+            Smart Match
+          </Button>
+          <Button variant="outline" onClick={() => setShowSettings(true)}>
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="discover" className="w-full">
@@ -564,6 +605,57 @@ const Dating = () => {
               Save Settings
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Gale-Shapley Matchmaking Dialog */}
+      <Dialog open={showMatchmaking} onOpenChange={setShowMatchmaking}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-dating" />
+              Smart Matchmaking
+            </DialogTitle>
+            <DialogDescription>
+              Run our advanced matching algorithm to find your most compatible matches based on interests, department, and preferences.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="rounded-lg bg-muted p-4 space-y-2">
+              <h4 className="font-medium flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                How it works
+              </h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Analyzes compatibility across all active users</li>
+                <li>• Creates optimal matches using the Gale-Shapley algorithm</li>
+                <li>• Considers shared interests, department, and preferences</li>
+                <li>• Only creates matches where both users are compatible</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowMatchmaking(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleRunMatchmaking}
+              disabled={runningMatchmaking}
+              className="bg-dating hover:bg-dating/90"
+            >
+              {runningMatchmaking ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Finding Matches...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Run Matchmaking
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
