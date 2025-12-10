@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import PullToRefresh from '@/components/PullToRefresh';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -184,9 +185,14 @@ const Events = () => {
     return event.event_type === filter;
   });
 
+  const handleRefresh = useCallback(async () => {
+    await fetchEvents();
+  }, [user]);
+
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <div className="flex justify-between items-center mb-6">
+    <PullToRefresh onRefresh={handleRefresh} className="h-full">
+      <div className="container mx-auto p-6 max-w-6xl">
+        <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Calendar className="h-8 w-8" />
@@ -388,7 +394,8 @@ const Events = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </PullToRefresh>
   );
 };
 
