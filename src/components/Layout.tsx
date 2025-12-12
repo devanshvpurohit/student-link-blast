@@ -75,9 +75,8 @@ const Layout = ({ children }: LayoutProps) => {
             <div className="p-1.5 bg-dating/10 rounded-lg">
               <Flame className="h-4 w-4 text-dating" />
             </div>
-            <h1 className="text-lg font-bold">
-              <span className="text-dating">Spark</span>
-              <span className="text-foreground">Link</span>
+            <h1 className="text-lg font-bold text-gradient">
+              Bazinga
             </h1>
           </div>
           
