@@ -1,5 +1,5 @@
 import { ReactNode, useState, useEffect } from 'react';
-import { Users, MessageSquare, Bell, Calendar, User, GraduationCap, Sparkles, Home, Download } from 'lucide-react';
+import { Users, MessageSquare, Calendar, User, Sparkles, Home, Download, Flame, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,39 +37,49 @@ const Layout = ({ children }: LayoutProps) => {
     }
   };
 
-  // Bottom nav items for mobile - primary navigation
+  // Bottom nav - Dating + Social focus
   const bottomNavItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Sparkles, label: 'Dating', path: '/dating' },
-    { icon: Calendar, label: 'Events', path: '/events' },
-    { icon: MessageSquare, label: 'Chat', path: '/messages' },
-    { icon: User, label: 'Profile', path: '/profile' },
+    { icon: Home, label: 'Home', path: '/', color: 'text-primary' },
+    { icon: Flame, label: 'Dating', path: '/dating', color: 'text-dating' },
+    { icon: Camera, label: 'Feed', path: '/pulse', color: 'text-accent-foreground' },
+    { icon: MessageSquare, label: 'Chat', path: '/messages', color: 'text-success' },
+    { icon: User, label: 'Profile', path: '/profile', color: 'text-muted-foreground' },
   ];
 
-  // Full menu items for desktop sidebar
+  // Desktop sidebar menu
   const menuItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Users, label: 'Connect', path: '/connect' },
-    { icon: Bell, label: 'Pulse', path: '/pulse' },
-    { icon: GraduationCap, label: 'ClubVerse', path: '/clubverse' },
-    { icon: Sparkles, label: 'Dating', path: '/dating' },
-    { icon: Calendar, label: 'Events', path: '/events' },
-    { icon: MessageSquare, label: 'Alumni', path: '/alumni' },
-    { icon: MessageSquare, label: 'Messages', path: '/messages' },
-    { icon: User, label: 'Profile', path: '/profile' },
+    { icon: Home, label: 'Home', path: '/', color: 'text-primary' },
+    { icon: Flame, label: 'Dating', path: '/dating', color: 'text-dating' },
+    { icon: Users, label: 'Friends', path: '/connect', color: 'text-primary' },
+    { icon: Camera, label: 'Feed', path: '/pulse', color: 'text-accent-foreground' },
+    { icon: Calendar, label: 'Events', path: '/events', color: 'text-success' },
+    { icon: MessageSquare, label: 'Messages', path: '/messages', color: 'text-success' },
+    { icon: Sparkles, label: 'Clubs', path: '/clubverse', color: 'text-primary' },
+    { icon: User, label: 'Profile', path: '/profile', color: 'text-muted-foreground' },
   ];
+
+  const isDatingPage = location.pathname === '/dating';
 
   return (
     <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
-      {/* Compact Header */}
-      <header className="shrink-0 glass border-b safe-area-top z-40">
+      {/* Header with Dating branding */}
+      <header className={cn(
+        "shrink-0 border-b safe-area-top z-40 transition-colors",
+        isDatingPage ? "bg-dating/5 border-dating/20" : "glass"
+      )}>
         <div className="flex items-center justify-between px-4 h-14">
-          <h1 
-            className="text-lg font-bold text-gradient cursor-pointer"
+          <div 
+            className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate('/')}
           >
-            Bazinga
-          </h1>
+            <div className="p-1.5 bg-dating/10 rounded-lg">
+              <Flame className="h-4 w-4 text-dating" />
+            </div>
+            <h1 className="text-lg font-bold">
+              <span className="text-dating">Spark</span>
+              <span className="text-foreground">Link</span>
+            </h1>
+          </div>
           
           <div className="flex items-center gap-2">
             {installable ? (
@@ -107,51 +117,56 @@ const Layout = ({ children }: LayoutProps) => {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Desktop Navigation - Sidebar */}
+        {/* Desktop Sidebar */}
         {user && (
           <nav className="hidden lg:flex flex-col w-56 bg-card/50 backdrop-blur-sm border-r p-3 shrink-0">
             <div className="space-y-1">
-              {menuItems.map((item) => (
-                <Button
-                  key={item.path}
-                  variant={location.pathname === item.path ? "default" : "ghost"}
-                  className={cn(
-                    "w-full justify-start gap-3 rounded-xl text-sm",
-                    location.pathname === item.path 
-                      ? "bg-primary text-primary-foreground" 
-                      : "hover:bg-primary/10 hover:text-primary"
-                  )}
-                  onClick={() => navigate(item.path)}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Button>
-              ))}
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                const isDating = item.path === '/dating';
+                return (
+                  <Button
+                    key={item.path}
+                    variant={isActive ? "default" : "ghost"}
+                    className={cn(
+                      "w-full justify-start gap-3 rounded-xl text-sm",
+                      isActive && isDating && "bg-dating text-white hover:bg-dating/90",
+                      isActive && !isDating && "bg-primary text-primary-foreground",
+                      !isActive && "hover:bg-muted"
+                    )}
+                    onClick={() => navigate(item.path)}
+                  >
+                    <item.icon className={cn("h-4 w-4", !isActive && item.color)} />
+                    {item.label}
+                  </Button>
+                );
+              })}
             </div>
           </nav>
         )}
 
-        {/* Main Content - Full height, scrollable */}
+        {/* Main Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden">
           {children}
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation - Fixed height */}
+      {/* Mobile Bottom Navigation */}
       {user && (
         <nav className="lg:hidden shrink-0 border-t bg-background/95 backdrop-blur-lg safe-area-bottom z-40">
           <div className="flex items-center justify-around h-16 px-2">
             {bottomNavItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const isDating = item.path === '/dating';
               return (
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 rounded-xl transition-all min-w-[56px]",
-                    isActive 
-                      ? "text-primary" 
-                      : "text-muted-foreground"
+                    isActive && isDating && "text-dating",
+                    isActive && !isDating && "text-primary",
+                    !isActive && "text-muted-foreground"
                   )}
                 >
                   <item.icon className={cn(
