@@ -13,152 +13,160 @@
 
 @layer base {
   :root {
-    /* Core backgrounds */
-    --background: 0 0% 98%;
-    --foreground: 220 15% 15%;
+    /* Notebook Theme - Cream/Paper backgrounds */
+    --background: 43 30% 96%;
+    --foreground: 220 20% 20%;
 
-    /* Card surfaces */
-    --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
+    /* Card surfaces - Paper white */
+    --card: 43 40% 98%;
+    --card-foreground: 220 20% 20%;
 
     /* Popover/Dropdown */
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
+    --popover: 43 40% 98%;
+    --popover-foreground: 220 20% 20%;
 
-    /* Primary - Trust Teal #00897B */
-    --primary: 174 100% 27%;
+    /* Primary - Pencil Blue #4A6FA5 */
+    --primary: 215 40% 47%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Muted surface */
-    --secondary: 174 30% 95%;
-    --secondary-foreground: 174 100% 22%;
+    /* Secondary - Lined paper blue */
+    --secondary: 215 30% 92%;
+    --secondary-foreground: 215 40% 35%;
 
     /* Muted elements */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 43 20% 92%;
+    --muted-foreground: 220 10% 50%;
 
-    /* Accent - Dating Coral #FF6E6C */
-    --accent: 1 100% 71%;
+    /* Accent - Red pen/marker #E74C3C */
+    --accent: 6 78% 57%;
     --accent-foreground: 0 0% 100%;
 
-    /* Success - Growth Lime #CDDC39 */
-    --success: 66 70% 54%;
-    --success-foreground: 220 15% 15%;
+    /* Success - Green highlighter */
+    --success: 142 60% 45%;
+    --success-foreground: 0 0% 100%;
 
     /* Destructive */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Dating specific */
-    --dating: 1 100% 71%;
+    /* Dating specific - Pink highlighter */
+    --dating: 340 82% 60%;
     --dating-foreground: 0 0% 100%;
     --dating-like: 142 76% 46%;
     --dating-nope: 0 84% 60%;
 
-    /* Borders & inputs */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 174 100% 27%;
+    /* Borders & inputs - Notebook lines */
+    --border: 215 30% 80%;
+    --input: 215 30% 85%;
+    --ring: 215 40% 47%;
 
-    /* Radius */
-    --radius: 0.75rem;
+    /* Radius - More organic/paper-like */
+    --radius: 0.5rem;
+
+    /* Notebook line color */
+    --notebook-line: 215 50% 85%;
+    --notebook-margin: 6 78% 70%;
 
     /* Sidebar */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 220 10% 30%;
-    --sidebar-primary: 174 100% 27%;
+    --sidebar-background: 43 35% 95%;
+    --sidebar-foreground: 220 15% 25%;
+    --sidebar-primary: 215 40% 47%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 174 30% 95%;
-    --sidebar-accent-foreground: 174 100% 22%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 174 100% 27%;
+    --sidebar-accent: 215 30% 92%;
+    --sidebar-accent-foreground: 215 40% 35%;
+    --sidebar-border: 215 30% 80%;
+    --sidebar-ring: 215 40% 47%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(174 100% 27%) 0%, hsl(174 100% 22%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(1 100% 71%) 0%, hsl(340 82% 60%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(66 70% 54%) 0%, hsl(80 76% 50%) 100%);
-    --gradient-dark: linear-gradient(180deg, hsl(220 15% 15%) 0%, hsl(220 20% 10%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(215 40% 47%) 0%, hsl(215 45% 40%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(6 78% 57%) 0%, hsl(340 82% 55%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 60% 45%) 0%, hsl(160 60% 40%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(220 20% 20%) 0%, hsl(220 25% 15%) 100%);
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-    --shadow-glow: 0 0 20px hsl(174 100% 27% / 0.3);
-    --shadow-glow-accent: 0 0 20px hsl(1 100% 71% / 0.3);
+    /* Paper-like shadows */
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+    --shadow-md: 0 4px 8px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 8px 16px -4px rgb(0 0 0 / 0.12);
+    --shadow-xl: 0 16px 32px -8px rgb(0 0 0 / 0.15);
+    --shadow-glow: 0 0 20px hsl(215 40% 47% / 0.25);
+    --shadow-glow-accent: 0 0 20px hsl(6 78% 57% / 0.25);
   }
 
   .dark {
-    /* Dark backgrounds - #121212 */
-    --background: 0 0% 7%;
-    --foreground: 0 0% 98%;
+    /* Dark notebook - Chalkboard style */
+    --background: 200 15% 12%;
+    --foreground: 43 30% 90%;
 
     /* Dark card surfaces */
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 98%;
+    --card: 200 15% 15%;
+    --card-foreground: 43 30% 90%;
 
     /* Dark popover */
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 200 15% 15%;
+    --popover-foreground: 43 30% 90%;
 
-    /* Primary stays vibrant in dark */
-    --primary: 174 100% 40%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary - Chalk blue */
+    --primary: 200 60% 65%;
+    --primary-foreground: 200 15% 12%;
 
     /* Secondary - Dark elevated surface */
-    --secondary: 0 0% 14%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 200 12% 20%;
+    --secondary-foreground: 43 30% 85%;
 
     /* Muted in dark */
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 64%;
+    --muted: 200 10% 18%;
+    --muted-foreground: 43 20% 60%;
 
-    /* Accent pops in dark */
-    --accent: 1 100% 71%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Chalk pink */
+    --accent: 340 70% 65%;
+    --accent-foreground: 200 15% 12%;
 
     /* Success in dark */
-    --success: 66 70% 54%;
-    --success-foreground: 0 0% 10%;
+    --success: 142 50% 55%;
+    --success-foreground: 200 15% 12%;
 
     /* Destructive in dark */
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Dating colors stay vibrant */
-    --dating: 1 100% 71%;
-    --dating-foreground: 0 0% 100%;
-    --dating-like: 142 76% 46%;
-    --dating-nope: 0 84% 60%;
+    /* Dating colors - Chalk style */
+    --dating: 340 70% 65%;
+    --dating-foreground: 200 15% 12%;
+    --dating-like: 142 50% 55%;
+    --dating-nope: 0 72% 55%;
 
     /* Borders in dark */
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 174 100% 40%;
+    --border: 200 12% 25%;
+    --input: 200 12% 22%;
+    --ring: 200 60% 65%;
+
+    /* Notebook lines - Chalk */
+    --notebook-line: 200 20% 30%;
+    --notebook-margin: 0 60% 50%;
 
     /* Sidebar dark */
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 174 100% 40%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 14%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 174 100% 40%;
+    --sidebar-background: 200 15% 10%;
+    --sidebar-foreground: 43 30% 85%;
+    --sidebar-primary: 200 60% 65%;
+    --sidebar-primary-foreground: 200 15% 12%;
+    --sidebar-accent: 200 12% 20%;
+    --sidebar-accent-foreground: 43 30% 85%;
+    --sidebar-border: 200 12% 25%;
+    --sidebar-ring: 200 60% 65%;
 
     /* Dark gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(174 100% 40%) 0%, hsl(174 100% 30%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(1 100% 71%) 0%, hsl(340 82% 55%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(66 70% 54%) 0%, hsl(80 76% 45%) 100%);
-    --gradient-dark: linear-gradient(180deg, hsl(0 0% 7%) 0%, hsl(0 0% 4%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(200 60% 65%) 0%, hsl(200 50% 55%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(340 70% 65%) 0%, hsl(340 60% 55%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 50% 55%) 0%, hsl(160 50% 50%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(200 15% 12%) 0%, hsl(200 18% 8%) 100%);
 
-    /* Dark shadows with glow */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
-    --shadow-glow: 0 0 30px hsl(174 100% 40% / 0.25);
-    --shadow-glow-accent: 0 0 30px hsl(1 100% 71% / 0.25);
+    /* Chalk-like shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+    --shadow-glow: 0 0 20px hsl(200 60% 65% / 0.2);
+    --shadow-glow-accent: 0 0 20px hsl(340 70% 65% / 0.2);
   }
 }
 
@@ -173,8 +181,27 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* Handwritten headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Caveat', cursive;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  h1 { @apply text-4xl md:text-5xl; }
+  h2 { @apply text-3xl md:text-4xl; }
+  h3 { @apply text-2xl md:text-3xl; }
+  h4 { @apply text-xl md:text-2xl; }
+
+  /* Labels and small text */
+  label, .label {
+    font-family: 'Kalam', cursive;
   }
 
   /* Improved focus states for accessibility */
@@ -185,6 +212,13 @@
   /* Better touch targets for mobile */
   button, a, [role="button"] {
     @apply touch-manipulation;
+    font-family: 'Patrick Hand', cursive;
+  }
+
+  /* Input fields with handwritten feel */
+  input, textarea, select {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.1rem;
   }
 
   /* Smooth scrolling for all scrollable elements */
@@ -198,13 +232,62 @@
 }
 
 @layer components {
+  /* Notebook paper effect */
+  .notebook-paper {
+    background-color: hsl(var(--card));
+    background-image: 
+      linear-gradient(hsl(var(--notebook-line)) 1px, transparent 1px);
+    background-size: 100% 2rem;
+    background-position: 0 0.5rem;
+  }
+
+  .notebook-paper-margin {
+    background-color: hsl(var(--card));
+    background-image: 
+      linear-gradient(90deg, transparent 3rem, hsl(var(--notebook-margin)) 3rem, hsl(var(--notebook-margin)) calc(3rem + 2px), transparent calc(3rem + 2px)),
+      linear-gradient(hsl(var(--notebook-line)) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 2rem;
+    background-position: 0 0, 0 0.5rem;
+  }
+
+  /* Paper card style */
+  .paper-card {
+    @apply bg-card border-2 border-border rounded-sm shadow-md;
+    transform: rotate(-0.5deg);
+    box-shadow: 
+      2px 2px 0 hsl(var(--border)),
+      4px 4px 0 hsl(var(--muted));
+  }
+
+  .paper-card:nth-child(even) {
+    transform: rotate(0.5deg);
+  }
+
+  /* Sketch underline */
+  .sketch-underline {
+    position: relative;
+  }
+
+  .sketch-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: 0.6;
+    transform: skewX(-5deg) scaleY(0.8);
+    border-radius: 2px;
+  }
+
   /* Glass morphism effect */
   .glass {
-    @apply bg-card/80 backdrop-blur-lg border border-border/50;
+    @apply bg-card/90 backdrop-blur-sm border-2 border-border;
   }
 
   .glass-dark {
-    @apply bg-card/60 backdrop-blur-xl border border-border/30;
+    @apply bg-card/80 backdrop-blur-sm border-2 border-border;
   }
 
   /* Gradient backgrounds */
@@ -229,18 +312,38 @@
     box-shadow: var(--shadow-glow-accent);
   }
 
-  /* Card hover effects */
+  /* Card hover effects - Paper lift */
   .card-hover {
     @apply transition-all duration-300 ease-out;
   }
 
   .card-hover:hover {
-    @apply -translate-y-1 shadow-lg;
+    transform: rotate(0deg) translateY(-4px) !important;
+    box-shadow: 
+      3px 3px 0 hsl(var(--border)),
+      6px 6px 0 hsl(var(--muted));
   }
 
   /* Button press effect */
   .btn-press:active {
     @apply scale-95;
+  }
+
+  /* Doodle button style */
+  .btn-doodle {
+    @apply border-2 border-foreground rounded-sm font-handwritten;
+    box-shadow: 2px 2px 0 hsl(var(--foreground));
+    transition: all 0.15s ease;
+  }
+
+  .btn-doodle:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 hsl(var(--foreground));
+  }
+
+  .btn-doodle:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 hsl(var(--foreground));
   }
 
   /* Dating specific styles */
@@ -252,10 +355,11 @@
     @apply bg-[hsl(var(--dating-nope))] text-white;
   }
 
-  /* Bottom navigation styles */
+  /* Bottom navigation styles - Paper strip */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-50;
+    @apply fixed bottom-0 left-0 right-0 bg-card/98 border-t-2 border-border z-50;
     padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 8px rgb(0 0 0 / 0.08);
   }
 
   /* Safe area padding for notch devices */
@@ -265,6 +369,45 @@
 
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Sticky note style */
+  .sticky-note {
+    @apply p-4 rounded-sm;
+    background: linear-gradient(135deg, hsl(50 90% 85%) 0%, hsl(50 80% 80%) 100%);
+    box-shadow: 
+      2px 2px 4px rgb(0 0 0 / 0.1),
+      inset 0 -20px 30px rgb(0 0 0 / 0.03);
+    transform: rotate(-1deg);
+  }
+
+  .sticky-note.pink {
+    background: linear-gradient(135deg, hsl(340 80% 88%) 0%, hsl(340 70% 83%) 100%);
+  }
+
+  .sticky-note.blue {
+    background: linear-gradient(135deg, hsl(200 80% 88%) 0%, hsl(200 70% 83%) 100%);
+  }
+
+  .sticky-note.green {
+    background: linear-gradient(135deg, hsl(140 60% 85%) 0%, hsl(140 50% 80%) 100%);
+  }
+
+  /* Tape effect */
+  .tape {
+    position: relative;
+  }
+
+  .tape::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 60px;
+    height: 24px;
+    background: linear-gradient(180deg, rgba(255,255,200,0.7) 0%, rgba(255,255,180,0.5) 100%);
+    border: 1px solid rgba(200,180,100,0.3);
   }
 
   /* Pulse animation for notifications */
@@ -383,5 +526,54 @@
   .text-gradient-accent {
     @apply bg-clip-text text-transparent;
     background-image: var(--gradient-accent);
+  }
+
+  /* Handwritten text utilities */
+  .font-handwritten {
+    font-family: 'Caveat', cursive;
+  }
+
+  .font-notebook {
+    font-family: 'Patrick Hand', cursive;
+  }
+
+  .font-sketch {
+    font-family: 'Kalam', cursive;
+  }
+
+  /* Sketch circle highlight */
+  .sketch-circle {
+    position: relative;
+  }
+
+  .sketch-circle::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border: 3px solid hsl(var(--accent));
+    border-radius: 50%;
+    opacity: 0.6;
+    transform: rotate(-3deg);
+  }
+
+  /* Crossed out text */
+  .crossed-out {
+    text-decoration: line-through;
+    text-decoration-style: wavy;
+    text-decoration-color: hsl(var(--accent));
+  }
+
+  /* Arrow pointer */
+  .arrow-point {
+    position: relative;
+  }
+
+  .arrow-point::after {
+    content: '→';
+    position: absolute;
+    right: -1.5rem;
+    font-family: 'Caveat', cursive;
+    font-size: 1.5em;
+    color: hsl(var(--accent));
   }
 }
