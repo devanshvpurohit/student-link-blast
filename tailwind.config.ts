@@ -18,6 +18,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        handwritten: ['Caveat', 'cursive'],
+        notebook: ['Patrick Hand', 'cursive'],
+        sketch: ['Kalam', 'cursive'],
+      },
       screens: {
         xs: "475px",
       },
