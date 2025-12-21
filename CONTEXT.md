@@ -1,95 +1,150 @@
-# Bazinga - App Context Prompt
+# ✏️ Bazinga — Dev Notes
 
-## Overview
-Bazinga is a modern dating and social media platform designed for college students and alumni. It combines swipe-based dating with campus social networking features.
+---
 
-## Core Identity
-- **Name**: Bazinga
-- **Platform**: Progressive Web App (PWA) - installable on iOS, Android, and desktop
-- **Target Audience**: College students and alumni
-- **Primary Focus**: Dating with integrated social features
+*scribbled at 2am with coffee ☕*
 
-## Key Features
+## what is this thing?
 
-### Dating (Primary Feature)
-- **Swipe Interface**: Tinder-style swipe left (pass) / right (like) cards
-- **Smart Matching**: Gale-Shapley stable matching algorithm for intelligent pairing
-- **Compatibility Scoring**: Algorithm considers interests, department, study year
-- **Dating Chat**: Private messaging for matched users
-- **Profile Verification**: Trust badges for verified users
-- **Multi-Photo Profiles**: Users can upload multiple photos
-- **Dating Preferences**: Gender preference, age range, relationship goals
+so basically... Bazinga = dating app + social stuff for college kids & alumni
+think tinder meets campus life. swipe for love, stay for the vibes ✨
 
-### Social Features
-- **Campus Connect**: Network with classmates and peers
-- **Feed/Pulse**: Share updates, posts, and content
-- **Campus Events**: Discover and RSVP to campus events
-- **ClubVerse**: Join clubs with ephemeral/vanishing messages (Snapchat-style)
-- **AnonySpace**: Anonymous posting board
-- **Alumni Network**: Connect with graduates, mentorship opportunities
+---
 
-### Messaging
-- **Direct Messages**: Chat with connections
-- **Media Sharing**: Send photos and voice notes
-- **Dating Chat**: Separate chat for romantic matches
+## the name
 
-## Technical Stack
-- **Frontend**: React, TypeScript, Vite, Tailwind CSS
-- **UI Components**: Shadcn/ui component library
-- **Backend**: Supabase (Auth, Database, Storage, Edge Functions)
-- **State Management**: TanStack React Query
-- **Animations**: Framer Motion (where applicable)
+**Bazinga** — yeah like the sheldon thing lol
+but also it's catchy & memorable. works.
 
-## Design System
+---
 
-### Color Tokens
-- **Primary (Teal #00897B)**: Trust, intelligence - headers, primary buttons, navigation
-- **Dating Accent (Coral #FF6E6C)**: Passion, excitement - like actions, match highlights
-- **Success (Lime #CDDC39)**: Growth, positivity - success states
-- **Background**: Light (#FAFAFA) / Dark (#121212)
+## who's it for?
 
-### Design Principles
-- Mobile-first responsive design
-- App-like bottom navigation on mobile
-- Safe-area support for notched devices
-- WCAG AA+ contrast compliance
-- Smooth transitions and micro-interactions
+→ college students (duh)  
+→ alumni who wanna stay connected  
+→ anyone looking for love OR friends on campus
 
-## User Flows
+---
 
-### New User
-1. Sign up with email/password
-2. Create profile (name, photos, bio)
-3. Set dating preferences
-4. Start swiping or explore social features
+## THE BIG FEATURES
 
-### Dating Flow
-1. View potential matches via swipe cards
-2. Swipe right to like, left to pass
-3. Mutual likes create a match
-4. Chat opens for matched users
+### 💕 Dating (the main thing)
 
-### Social Flow
-1. Browse feed for campus updates
-2. Connect with classmates
-3. Join clubs and events
-4. Message connections
+- swipe cards! left = nope, right = yes pls
+- we use that fancy Gale-Shapley algorithm for matching (stable matching ftw)
+- compatibility scores based on interests, department, year
+- verified badges = trust points
+- multiple photos per profile
+- set your preferences: gender, age range, what you're looking for
 
-## Database Tables
-- `profiles` - User profiles with dating preferences
-- `dating_matches` - Match records with compatibility scores
-- `dating_conversations` / `dating_messages` - Dating chat
-- `connections` - Friend/professional connections
-- `messages` - Direct messages
-- `clubs` / `club_members` / `club_messages` - Club system
-- `campus_events` / `event_rsvps` - Events
-- `posts` - Feed content
-- `anon_posts` - Anonymous posts
+### 🎭 Social Stuff
 
-## Key Behaviors
-- Dating is the hero feature prominently displayed on home
-- Quick stats show likes, matches, messages at a glance
-- Mobile navigation prioritizes: Home, Dating, Feed, Chat, Profile
-- Voice notes and image sharing in chats
-- Push notification support for matches and messages
-- Offline-capable PWA with service worker caching
+- **Connect** → find & friend classmates
+- **Pulse** → the feed, posts, updates, campus tea ☕
+- **Events** → parties, meetups, campus happenings
+- **ClubVerse** → clubs with disappearing messages (snapchat vibes)
+- **AnonySpace** → spill secrets anonymously 👀
+- **Alumni** → network with grads, get mentored
+
+### 💬 Messaging
+
+- DMs with connections
+- send pics, voice notes, the works
+- separate chat for dating matches (keep it organized!)
+
+---
+
+## tech stuff (boring but important)
+
+```
+Frontend:  React + TypeScript + Vite + Tailwind
+Components: shadcn/ui (so pretty)
+Backend:   Supabase (auth, db, storage, edge functions)
+State:     TanStack Query
+Animations: Framer Motion when needed
+```
+
+---
+
+## colors & vibes
+
+| what | color | why |
+|------|-------|-----|
+| Primary | Teal #00897B | trust, smart, calm |
+| Dating | Coral #FF6E6C | passion, excitement! |
+| Success | Lime #CDDC39 | growth, positivity |
+| Light bg | #FAFAFA | clean |
+| Dark bg | #121212 | sleek |
+
+---
+
+## design rules i keep forgetting
+
+- [x] mobile first always
+- [x] bottom nav on phones
+- [x] safe area for notched phones
+- [x] good contrast (accessibility!)
+- [x] smooth animations everywhere
+
+---
+
+## user journeys
+
+### new person shows up:
+1. sign up (email/password)
+2. make profile → name, pics, bio
+3. set dating prefs
+4. START SWIPING or explore social
+
+### dating flow:
+```
+see card → swipe → match? → CHAT! 💬
+```
+
+### social flow:
+```
+browse feed → connect → join clubs → message ppl
+```
+
+---
+
+## database cheat sheet
+
+| table | what's in it |
+|-------|-------------|
+| profiles | user info + dating prefs |
+| dating_matches | who liked who, scores |
+| dating_conversations | match chats |
+| dating_messages | actual messages |
+| connections | friends/connections |
+| messages | DMs |
+| clubs | club info |
+| club_members | who's in what club |
+| club_messages | ephemeral msgs |
+| campus_events | events |
+| event_rsvps | who's going |
+| posts | feed content |
+| anon_posts | anonymous stuff |
+
+---
+
+## things to remember!!
+
+- dating = HERO feature. front & center on home
+- quick stats: likes, matches, messages (ppl love numbers)
+- mobile nav order: Home | Dating | Feed | Chat | Profile
+- voice notes work in chats
+- push notifs for matches & messages
+- PWA = works offline-ish
+
+---
+
+## random notes
+
+- need to add stories feature eventually?
+- onboarding could be smoother
+- maybe premium tier for "who liked you" reveal?
+
+---
+
+*~ end of notes ~*
