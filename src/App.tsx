@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
@@ -14,16 +14,15 @@ import ClubVerse from "./pages/ClubVerse";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import Alumni from "./pages/Alumni";
-import Dating from "./pages/Dating";
+import Discover from "./pages/Discover";
 import Events from "./pages/Events";
-import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="dark" storageKey="bazinga-ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="bazinga-ui-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -38,11 +37,10 @@ const App = () => (
               <Route path="/clubverse" element={<ClubVerse />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/profile" element={<Profile />} />
-          <Route path="/alumni" element={<Alumni />} />
-          <Route path="/dating" element={<Dating />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/install" element={<Install />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/alumni" element={<Alumni />} />
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/dating" element={<Navigate to="/discover" replace />} />
+              <Route path="/events" element={<Events />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
