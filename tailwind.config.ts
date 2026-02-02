@@ -23,8 +23,9 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
-        serif: ["Lora", "serif"],
+        handwriting: ["Caveat", "cursive"],
+        handwritingAlt: ["Patrick Hand", "cursive"],
+        scribble: ["Kalam", "cursive"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -102,6 +103,8 @@ export default {
       boxShadow: {
         glow: "var(--shadow-glow)",
         "glow-accent": "var(--shadow-glow-accent)",
+        "paper": "0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05)",
+        "paper-hover": "0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07)",
       },
       keyframes: {
         "accordion-down": {
@@ -132,6 +135,15 @@ export default {
           from: { transform: "translateY(-100%)", opacity: "0" },
           to: { transform: "translateY(0)", opacity: "1" },
         },
+        wiggle: {
+          "0%, 100%": { transform: "rotate(-1deg)" },
+          "50%": { transform: "rotate(1deg)" },
+        },
+        scribble: {
+          "0%, 100%": { transform: "translateX(0)" },
+          "25%": { transform: "translateX(1px)" },
+          "75%": { transform: "translateX(-1px)" },
+        },
         bounce: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10%)" },
@@ -149,6 +161,8 @@ export default {
         "scale-in": "scale-in 0.2s ease-out",
         "slide-up": "slide-up 0.3s ease-out",
         "slide-down": "slide-down 0.3s ease-out",
+        wiggle: "wiggle 0.5s ease-in-out",
+        scribble: "scribble 0.3s ease-in-out",
         bounce: "bounce 0.6s ease-in-out",
         pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },

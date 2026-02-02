@@ -1,8 +1,8 @@
 import { ReactNode, useState } from 'react';
 import {
   Users, MessageSquare, Bell, Hash, Calendar, User,
-  GraduationCap, Sparkles, Menu, X, LogOut, Search,
-  ChevronRight, PanelLeftClose, PanelLeft, Home
+  GraduationCap, Sparkles, Menu, X, LogOut,
+  ChevronRight, PanelLeftClose, PanelLeft, Home, PenTool
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -39,10 +39,10 @@ const Layout = ({ children }: LayoutProps) => {
   if (isAuthPage) return <div className="min-h-screen bg-background">{children}</div>;
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-sans">
+    <div className="flex min-h-screen bg-background text-foreground">
       {/* 
         ========================================
-        SIDEBAR NAVIGATION (Desktop)
+        SIDEBAR NAVIGATION (Desktop) - Notebook Style
         ========================================
       */}
       {user && (
@@ -56,11 +56,13 @@ const Layout = ({ children }: LayoutProps) => {
           <div className="h-14 flex items-center justify-between px-4 border-b border-border/50">
             {!sidebarCollapsed && (
               <div
-                className="flex items-center gap-2 font-semibold cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer"
                 onClick={() => navigate('/')}
               >
-                <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs">B</div>
-                <span className="truncate">Bazinga</span>
+                <div className="w-8 h-8 rounded-lg bg-accent text-accent-foreground flex items-center justify-center font-handwriting text-xl font-bold">
+                  B
+                </div>
+                <span className="font-handwriting text-2xl">Bazinga</span>
               </div>
             )}
             <Button
@@ -78,17 +80,17 @@ const Layout = ({ children }: LayoutProps) => {
             <div className="px-3 py-4">
               <button
                 onClick={() => navigate('/profile')}
-                className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-muted/60 transition-colors text-left group"
+                className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-transparent hover:border-border hover:bg-muted/30 transition-all text-left group"
               >
-                <Avatar className="h-8 w-8 rounded border border-border">
+                <Avatar className="h-10 w-10 rounded-xl border-2 border-border">
                   <AvatarImage src={user.user_metadata?.avatar_url} />
-                  <AvatarFallback className="rounded bg-muted text-xs">
+                  <AvatarFallback className="rounded-xl bg-accent/10 text-accent font-handwriting text-lg">
                     {user.email?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 overflow-hidden">
-                  <p className="text-sm font-medium truncate">{user.user_metadata?.full_name || 'Student'}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  <p className="font-handwritingAlt text-base truncate">{user.user_metadata?.full_name || 'Student'}</p>
+                  <p className="text-xs text-muted-foreground font-scribble truncate">{user.email}</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
@@ -105,16 +107,16 @@ const Layout = ({ children }: LayoutProps) => {
                     key={item.path}
                     onClick={() => navigate(item.path)}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all font-handwritingAlt",
                       isActive
-                        ? "bg-muted text-foreground font-medium"
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                        ? "bg-accent/10 text-accent border-2 border-accent/20"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground border-2 border-transparent",
                       sidebarCollapsed && "justify-center px-2"
                     )}
                     title={sidebarCollapsed ? item.label : undefined}
                   >
-                    <item.icon className={cn("h-4 w-4 shrink-0", isActive && "text-foreground")} />
-                    {!sidebarCollapsed && <span>{item.label}</span>}
+                    <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-accent")} />
+                    {!sidebarCollapsed && <span className="text-base">{item.label}</span>}
                   </button>
                 );
               })}
@@ -122,7 +124,7 @@ const Layout = ({ children }: LayoutProps) => {
           </ScrollArea>
 
           {/* Sidebar Footer */}
-          <div className="p-3 border-t border-border/50 gap-1 flex flex-col">
+          <div className="p-3 border-t border-border/50 gap-2 flex flex-col">
             <div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "justify-between px-2")}>
               <ThemeToggle />
               {!sidebarCollapsed && (
@@ -130,7 +132,7 @@ const Layout = ({ children }: LayoutProps) => {
                   variant="ghost"
                   size="sm"
                   onClick={signOut}
-                  className="text-muted-foreground hover:text-destructive h-8 px-2"
+                  className="text-muted-foreground hover:text-destructive h-9 px-3 font-handwritingAlt"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
@@ -147,11 +149,13 @@ const Layout = ({ children }: LayoutProps) => {
         ========================================
       */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile Header */}
+        {/* Mobile Header - Notebook Style */}
         <header className="lg:hidden h-14 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50 flex items-center justify-between px-4">
-          <div className="flex items-center gap-2 font-semibold">
-            <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs">B</div>
-            <span>Bazinga</span>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-accent text-accent-foreground flex items-center justify-center font-handwriting text-xl font-bold">
+              B
+            </div>
+            <span className="font-handwriting text-2xl">Bazinga</span>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -163,33 +167,57 @@ const Layout = ({ children }: LayoutProps) => {
 
         {/* Mobile Menu Overlay */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-40 bg-background pt-16 px-6 pb-6 overflow-y-auto animate-in fade-in slide-in-from-top-4">
+          <div className="lg:hidden fixed inset-0 z-40 bg-background pt-16 px-6 pb-6 overflow-y-auto animate-fade-in">
+            {/* User card at top */}
+            {user && (
+              <div 
+                className="mb-6 p-4 rounded-xl border-2 border-dashed border-border bg-card"
+                style={{ transform: 'rotate(-0.5deg)' }}
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12 rounded-xl border-2 border-accent/20">
+                    <AvatarImage src={user.user_metadata?.avatar_url} />
+                    <AvatarFallback className="rounded-xl bg-accent/10 text-accent font-handwriting text-xl">
+                      {user.email?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-handwritingAlt text-lg">{user.user_metadata?.full_name || 'Student'}</p>
+                    <p className="text-sm text-muted-foreground font-scribble">{user.email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <nav className="flex flex-col gap-2">
-              {menuItems.map((item) => (
+              {menuItems.map((item, i) => (
                 <button
                   key={item.path}
                   onClick={() => {
                     navigate(item.path);
                     setMobileMenuOpen(false);
                   }}
+                  style={{ transform: `rotate(${i % 2 === 0 ? '-0.3' : '0.3'}deg)` }}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors",
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-base transition-all font-handwritingAlt border-2",
                     location.pathname === item.path
-                      ? "bg-muted text-foreground font-medium"
-                      : "text-muted-foreground hover:bg-muted/50"
+                      ? "bg-accent/10 text-accent border-accent/20"
+                      : "text-muted-foreground hover:bg-muted/50 border-transparent hover:border-border"
                   )}
                 >
                   <item.icon className="h-5 w-5" />
                   {item.label}
                 </button>
               ))}
-              <div className="h-px bg-border my-2" />
+              
+              <div className="h-px bg-border my-3" style={{ transform: 'rotate(-0.5deg)' }} />
+              
               <button
                 onClick={() => {
                   navigate('/profile');
                   setMobileMenuOpen(false);
                 }}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:bg-muted/50"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-base text-muted-foreground hover:bg-muted/50 font-handwritingAlt border-2 border-transparent hover:border-border"
               >
                 <User className="h-5 w-5" />
                 Profile
@@ -199,7 +227,7 @@ const Layout = ({ children }: LayoutProps) => {
                   signOut();
                   setMobileMenuOpen(false);
                 }}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-destructive hover:bg-destructive/10"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-base text-destructive hover:bg-destructive/10 font-handwritingAlt border-2 border-transparent hover:border-destructive/20"
               >
                 <LogOut className="h-5 w-5" />
                 Sign Out
