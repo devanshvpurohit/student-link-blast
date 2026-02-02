@@ -1,73 +1,69 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Users, Briefcase, UserX, MessageSquare, GraduationCap } from 'lucide-react';
+import {
+  Users, Briefcase, UserX, MessageSquare, GraduationCap,
+  Search, Check, X, Clock, ChevronRight, School, BookOpen
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
 
-interface Profile {
-  id: string;
-  full_name: string;
-  avatar_url?: string;
-  department?: string;
-  bio?: string;
-  year_of_study?: number;
-  interests?: string[];
-}
-
-interface Connection {
-  id: string;
-  requester_id: string;
-  receiver_id: string;
-  status: string;
-  connection_type: string;
-  profiles: Profile;
-}
+// Use strict types from our generated definition
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type Connection = Database['public']['Tables']['connections']['Row'] & {
+  profiles: Profile // Joined data
+};
 
 const Connect = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [connectionType, setConnectionType] = useState<string>('classmate');
+  const [connectionType, setConnectionType] = useState<Database['public']['Tables']['connections']['Row']['connection_type']>('classmate');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
-      fetchProfiles();
-      fetchConnections();
+      loadData();
     }
   }, [user]);
 
+  const loadData = async () => {
+    setIsLoading(true);
+    await Promise.all([fetchProfiles(), fetchConnections()]);
+    setIsLoading(false);
+  };
+
   const fetchProfiles = async () => {
-    // Get all existing connections to filter out already connected users
+    // Get IDs of people I'm already connected with or have pending requests with
+    if (!user) return;
+
     const { data: existingConnections } = await supabase
       .from('connections')
       .select('requester_id, receiver_id')
-      .or(`requester_id.eq.${user?.id},receiver_id.eq.${user?.id}`);
+      .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
     const connectedUserIds = new Set(
       existingConnections?.flatMap(conn => [conn.requester_id, conn.receiver_id]) || []
     );
-    connectedUserIds.add(user?.id!); // Exclude current user
+    connectedUserIds.add(user.id);
 
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .not('id', 'in', `(${Array.from(connectedUserIds).join(',')})`);
+      .not('id', 'in', `(${Array.from(connectedUserIds).join(',')})`)
+      .limit(50);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load profiles",
-        variant: "destructive",
-      });
+      console.error("Error loading profiles:", error);
     } else {
       setProfiles(data || []);
       setFilteredProfiles(data || []);
@@ -75,6 +71,14 @@ const Connect = () => {
   };
 
   const fetchConnections = async () => {
+    if (!user) return;
+
+    // Fetch connections where I am requester OR receiver
+    // Note: Supabase JS client doesn't support complex joins easily with types, 
+    // so we might need two queries or a view. 
+    // For now, let's try a simple join if the foreign keys allow it directly.
+
+    // Workaround: We'll fetch connections and then filter/map manually for the UI
     const { data, error } = await supabase
       .from('connections')
       .select(`
@@ -82,66 +86,37 @@ const Connect = () => {
         requester:profiles!connections_requester_id_fkey(*),
         receiver:profiles!connections_receiver_id_fkey(*)
       `)
-      .or(`requester_id.eq.${user?.id},receiver_id.eq.${user?.id}`);
+      .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
     if (error) {
       console.error('Error fetching connections:', error);
     } else {
-      // Transform data to include the correct profile info
-      const transformedData = (data || []).map(connection => ({
-        ...connection,
-        profiles: connection.requester_id === user?.id 
-          ? connection.receiver 
-          : connection.requester
+      // Transform to a simpler structure for the UI
+      const transformedData = (data || []).map((conn: any) => ({
+        ...conn,
+        // If I sent the request, show the receiver. If I received it, show the requester.
+        profiles: conn.requester_id === user.id ? conn.receiver : conn.requester
       }));
       setConnections(transformedData);
     }
   };
 
   const sendConnectionRequest = async (receiverId: string) => {
+    if (!user) return;
     const { error } = await supabase
       .from('connections')
       .insert({
-        requester_id: user?.id,
+        requester_id: user.id,
         receiver_id: receiverId,
         connection_type: connectionType,
+        status: 'pending'
       });
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send connection request",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Could not send request", variant: "destructive" });
     } else {
-      toast({
-        title: "Success",
-        description: "Connection request sent!",
-      });
-      fetchConnections();
-      fetchProfiles(); // Refresh profiles to remove newly connected user
-    }
-  };
-
-  const removeConnection = async (connectionId: string) => {
-    const { error } = await supabase
-      .from('connections')
-      .delete()
-      .eq('id', connectionId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to remove connection",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Connection removed",
-      });
-      fetchConnections();
-      fetchProfiles(); // Refresh profiles
+      toast({ title: "Request sent", description: `You asked to connect as ${connectionType.replace('_', ' ')}` });
+      loadData();
     }
   };
 
@@ -152,348 +127,193 @@ const Connect = () => {
       .eq('id', connectionId);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update connection",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Update failed", variant: "destructive" });
     } else {
-      toast({
-        title: "Success",
-        description: `Connection ${status}!`,
-      });
-      fetchConnections();
-      fetchProfiles(); // Refresh profiles
+      toast({ title: status === 'accepted' ? "Connected!" : "Declined" });
+      loadData();
     }
   };
 
-  // Filter profiles based on search term
+  // Filter logic
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredProfiles(profiles);
     } else {
+      const lowerTerm = searchTerm.toLowerCase();
       const filtered = profiles.filter(profile =>
-        profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.bio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.interests?.some(interest => 
-          interest.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        profile.full_name?.toLowerCase().includes(lowerTerm) ||
+        profile.department?.toLowerCase().includes(lowerTerm) ||
+        profile.interests?.some(i => i.toLowerCase().includes(lowerTerm))
       );
       setFilteredProfiles(filtered);
     }
   }, [searchTerm, profiles]);
 
+  // Helper for icons
   const getConnectionIcon = (type: string) => {
     switch (type) {
-      case 'networking': return <Briefcase className="h-4 w-4 text-blue-500" />;
-      default: return <Users className="h-4 w-4 text-green-500" />;
+      case 'professional': return <Briefcase className="h-4 w-4 text-blue-500" />;
+      case 'mentor':
+      case 'mentee': return <GraduationCap className="h-4 w-4 text-amber-500" />;
+      case 'classmate': return <School className="h-4 w-4 text-emerald-500" />;
+      case 'study_group': return <BookOpen className="h-4 w-4 text-purple-500" />;
+      default: return <Users className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
-  const pendingRequests = connections.filter(c => 
-    c.receiver_id === user?.id && c.status === 'pending'
-  );
-
-  const sentRequests = connections.filter(c => 
-    c.requester_id === user?.id && c.status === 'pending'
-  );
-
+  // Derived state
+  const pendingRequests = connections.filter(c => c.receiver_id === user?.id && c.status === 'pending');
+  const sentRequests = connections.filter(c => c.requester_id === user?.id && c.status === 'pending');
   const myConnections = connections.filter(c => c.status === 'accepted');
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Campus Connect</h1>
-        <p className="text-muted-foreground">Discover and connect with fellow students</p>
+    <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-6">
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Connect</h1>
+          <p className="text-muted-foreground text-sm">Grow your academic and professional network.</p>
+        </div>
       </div>
-      
+
       <Tabs defaultValue="discover" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="discover">Discover Students</TabsTrigger>
-          <TabsTrigger value="requests">
-            Requests {pendingRequests.length > 0 && (
-              <Badge variant="destructive" className="ml-2">{pendingRequests.length}</Badge>
+        <TabsList className="bg-muted/50 p-1 rounded-lg inline-flex">
+          <TabsTrigger value="discover" className="rounded-md">Discover</TabsTrigger>
+          <TabsTrigger value="requests" className="rounded-md relative">
+            Requests
+            {pendingRequests.length > 0 && (
+              <span className="ml-2 bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full">{pendingRequests.length}</span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="sent">
-            Sent {sentRequests.length > 0 && (
-              <Badge variant="secondary" className="ml-2">{sentRequests.length}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="connections">My Network</TabsTrigger>
+          <TabsTrigger value="network" className="rounded-md">My Network</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="discover" className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Search Students</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Input
-                  placeholder="Search by name, department, interests..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Connection Type</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <Button
-                    variant={connectionType === 'classmate' ? 'default' : 'outline'}
-                    onClick={() => setConnectionType('classmate')}
-                    className="gap-1 text-xs sm:text-sm"
-                    size="sm"
-                  >
-                    <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Classmate</span>
-                  </Button>
-                  <Button
-                    variant={connectionType === 'professional' ? 'default' : 'outline'}
-                    onClick={() => setConnectionType('professional')}
-                    className="gap-1 text-xs sm:text-sm"
-                    size="sm"
-                  >
-                    <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Professional</span>
-                  </Button>
-                  <Button
-                    variant={connectionType === 'mentor' ? 'default' : 'outline'}
-                    onClick={() => setConnectionType('mentor')}
-                    className="gap-1 text-xs sm:text-sm"
-                    size="sm"
-                  >
-                    <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Mentor</span>
-                  </Button>
-                  <Button
-                    variant={connectionType === 'alumni' ? 'default' : 'outline'}
-                    onClick={() => setConnectionType('alumni')}
-                    className="gap-1 text-xs sm:text-sm"
-                    size="sm"
-                  >
-                    <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Alumni</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+        <TabsContent value="discover" className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search students, departments, interests..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 bg-muted/20 border-border"
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
+              {/* Simplified filter pills for connection type */}
+              {(['classmate', 'study_group', 'project_partner', 'mentor'] as const).map(type => (
+                <Button
+                  key={type}
+                  variant={connectionType === type ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConnectionType(type)}
+                  className="capitalize whitespace-nowrap"
+                >
+                  {getConnectionIcon(type)}
+                  <span className="ml-2">{type.replace('_', ' ')}</span>
+                </Button>
+              ))}
+            </div>
           </div>
 
-          {filteredProfiles.length === 0 ? (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <p className="text-muted-foreground">No students found matching your search</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredProfiles.map((profile) => (
-              <Card key={profile.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <Avatar>
-                      <AvatarImage src={profile.avatar_url} />
-                      <AvatarFallback>
-                        {profile.full_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {isLoading ? (
+              <p className="col-span-full text-center py-12 text-muted-foreground animate-pulse">Loading profiles...</p>
+            ) : filteredProfiles.length === 0 ? (
+              <div className="col-span-full text-center py-12 border border-dashed rounded-lg">
+                <p className="text-muted-foreground">No students found.</p>
+              </div>
+            ) : (
+              filteredProfiles.map(profile => (
+                <Card key={profile.id} className="overflow-hidden border-border hover:border-primary/20 transition-colors">
+                  <div className="p-4 flex flex-col items-center text-center space-y-3">
+                    <Avatar className="h-16 w-16 border-2 border-background shadow-sm">
+                      <AvatarImage src={profile.avatar_url || undefined} />
+                      <AvatarFallback>{profile.full_name?.[0]}</AvatarFallback>
                     </Avatar>
                     <div>
                       <h3 className="font-semibold">{profile.full_name}</h3>
-                      {profile.department && (
-                        <p className="text-sm text-muted-foreground">{profile.department}</p>
-                      )}
-                      {profile.year_of_study && (
-                        <p className="text-sm text-muted-foreground">Year {profile.year_of_study}</p>
-                      )}
+                      <p className="text-sm text-muted-foreground">{profile.department}</p>
                     </div>
-                  </div>
-                  
-                  {profile.bio && (
-                    <p className="text-sm text-muted-foreground mb-4">{profile.bio}</p>
-                  )}
-                  
-                  {profile.interests && profile.interests.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {profile.interests.slice(0, 3).map((interest, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {interest}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <Button 
-                    className="w-full gap-2"
-                    onClick={() => sendConnectionRequest(profile.id)}
-                  >
-                    {getConnectionIcon(connectionType)}
-                    {connectionType === 'friend' ? 'Add Classmate' : 'Connect'}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="requests">
-          <Card>
-            <CardHeader>
-              <CardTitle>Connection Requests</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {pendingRequests.map((request) => (
-                <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={request.profiles.avatar_url} />
-                      <AvatarFallback>
-                        {request.profiles.full_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold">{request.profiles.full_name}</h3>
-                      {request.profiles.department && (
-                        <p className="text-sm text-muted-foreground">{request.profiles.department}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        {getConnectionIcon(request.connection_type)}
-                        <span className="text-xs text-muted-foreground capitalize">
-                          {request.connection_type === 'friend' ? 'Classmate' : 'Professional'} request
-                        </span>
+                    {profile.interests && (
+                      <div className="flex flex-wrap gap-1 justify-center">
+                        {profile.interests.slice(0, 3).map(i => (
+                          <Badge key={i} variant="secondary" className="text-[10px] px-1.5">{i}</Badge>
+                        ))}
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm"
-                      onClick={() => updateConnectionStatus(request.id, 'accepted')}
-                    >
-                      Accept
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => updateConnectionStatus(request.id, 'declined')}
-                    >
-                      Decline
+                    )}
+                    <Button size="sm" className="w-full mt-2" onClick={() => sendConnectionRequest(profile.id)}>
+                      Connect
                     </Button>
                   </div>
-                </div>
-              ))}
-              {pendingRequests.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">No pending connection requests</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="sent">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pending Requests</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {sentRequests.map((request) => (
-                <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={request.profiles.avatar_url} />
-                      <AvatarFallback>
-                        {request.profiles.full_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold">{request.profiles.full_name}</h3>
-                      {request.profiles.department && (
-                        <p className="text-sm text-muted-foreground">{request.profiles.department}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        {getConnectionIcon(request.connection_type)}
-                        <span className="text-xs text-muted-foreground capitalize">
-                          {request.connection_type === 'friend' ? 'Classmate' : 'Professional'} request
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <Badge variant="outline">Pending</Badge>
-                </div>
-              ))}
-              {sentRequests.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">No pending requests sent</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="connections">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {myConnections.map((connection) => {
-              const otherProfile = connection.profiles;
-              
-              return (
-                <Card key={connection.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col space-y-4">
-                      <div className="flex items-center space-x-4">
-                        <Avatar className="h-14 w-14">
-                          <AvatarImage src={otherProfile.avatar_url} />
-                          <AvatarFallback className="text-lg">
-                            {otherProfile.full_name?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{otherProfile.full_name}</h3>
-                          {otherProfile.department && (
-                            <p className="text-sm text-muted-foreground">{otherProfile.department}</p>
-                          )}
-                          {otherProfile.year_of_study && (
-                            <p className="text-xs text-muted-foreground">Year {otherProfile.year_of_study}</p>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        {getConnectionIcon(connection.connection_type)}
-                        <span className="text-sm text-muted-foreground capitalize">
-                          {connection.connection_type === 'friend' ? 'Classmate' : 'Professional'}
-                        </span>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1 gap-2">
-                          <MessageSquare className="h-4 w-4" />
-                          Message
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => removeConnection(connection.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <UserX className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
                 </Card>
-              );
-            })}
-            {myConnections.length === 0 && (
-              <Card className="col-span-full">
-                <CardContent className="p-12 text-center">
-                  <p className="text-muted-foreground">Start building your campus network by connecting with fellow students!</p>
-                </CardContent>
-              </Card>
+              ))
             )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="requests" className="space-y-4">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Received ({pendingRequests.length})</h3>
+          <div className="space-y-2">
+            {pendingRequests.map(req => (
+              <div key={req.id} className="flex items-center justify-between p-3 border rounded-lg bg-card">
+                <div className="flex items-center gap-3">
+                  <Avatar>
+                    <AvatarImage src={req.profiles.avatar_url || undefined} />
+                    <AvatarFallback>{req.profiles.full_name?.[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h4 className="font-medium text-sm">{req.profiles.full_name}</h4>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      {getConnectionIcon(req.connection_type)}
+                      <span className="capitalize">{req.connection_type.replace('_', ' ')} request</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => updateConnectionStatus(req.id, 'declined')}>Decline</Button>
+                  <Button size="sm" onClick={() => updateConnectionStatus(req.id, 'accepted')}>Accept</Button>
+                </div>
+              </div>
+            ))}
+            {pendingRequests.length === 0 && (
+              <p className="text-sm text-muted-foreground py-4">No pending requests.</p>
+            )}
+          </div>
+
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-8">Sent ({sentRequests.length})</h3>
+          <div className="space-y-2">
+            {sentRequests.map(req => (
+              <div key={req.id} className="flex items-center justify-between p-3 border rounded-lg bg-muted/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs">
+                    {req.profiles.full_name?.[0]}
+                  </div>
+                  <span className="text-sm font-medium">{req.profiles.full_name}</span>
+                </div>
+                <Badge variant="outline" className="text-xs font-normal">Pending</Badge>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="network" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {myConnections.map(conn => (
+              <div key={conn.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/30 transition-colors">
+                <Avatar>
+                  <AvatarImage src={conn.profiles.avatar_url || undefined} />
+                  <AvatarFallback>{conn.profiles.full_name?.[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h4 className="font-medium text-sm">{conn.profiles.full_name}</h4>
+                  <p className="text-xs text-muted-foreground capitalize">{conn.connection_type.replace('_', ' ')}</p>
+                </div>
+                <Button size="icon" variant="ghost">
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </div>
+            ))}
           </div>
         </TabsContent>
       </Tabs>
