@@ -21,6 +21,11 @@ export default {
       screens: {
         xs: "475px",
       },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+        serif: ["Lora", "serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -67,6 +72,7 @@ export default {
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
+          background: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
           primary: "hsl(var(--sidebar-primary))",
           "primary-foreground": "hsl(var(--sidebar-primary-foreground))",

@@ -33,9 +33,9 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       {/* Brand Side */}
-      <div className="bg-primary text-primary-foreground p-8 lg:p-12 flex flex-col justify-between">
+      <div className="bg-primary text-primary-foreground p-8 lg:p-12 flex flex-col justify-between order-first">
         <div>
           <div className="flex items-center gap-2 font-bold text-xl mb-8">
             <div className="h-8 w-8 bg-background text-foreground rounded-md flex items-center justify-center">B</div>
