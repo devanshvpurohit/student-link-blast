@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
-    Sparkles, Settings, X, Check, Search, Filter
+    Sparkles, Settings, X, Check, Search, Heart, PenTool
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Database } from "@/integrations/supabase/types";
@@ -22,18 +22,12 @@ interface MatchProfile extends Profile {
 
 const calculateCompatibility = (curr: Partial<Profile>, other: Profile) => {
     let score = 50;
-    // Department Match (+20)
     if (curr.department && other.department && curr.department === other.department) score += 20;
-
-    // Year Proximity (+10)
     if (curr.year_of_study && other.year_of_study && Math.abs(curr.year_of_study - other.year_of_study) <= 1) score += 10;
-
-    // Interest Overlap (up to +20)
     if (curr.interests && other.interests) {
         const overlap = curr.interests.filter(i => other.interests?.includes(i)).length;
         score += Math.min(overlap * 5, 20);
     }
-
     return Math.min(score, 100);
 };
 
@@ -45,7 +39,6 @@ const Discover = () => {
     const [currentUserProfile, setCurrentUserProfile] = useState<Partial<Profile>>({});
     const [loading, setLoading] = useState(true);
 
-    // Local settings state (mirroring DB fields)
     const [settings, setSettings] = useState({
         dating_enabled: false,
         dating_looking_for: "friends",
@@ -63,7 +56,6 @@ const Discover = () => {
         setLoading(true);
         if (!user) return;
 
-        // 1. Get current user profile
         const { data: userData, error: userError } = await supabase
             .from('profiles')
             .select('*')
@@ -84,29 +76,26 @@ const Discover = () => {
             dating_gender: userData.dating_gender || '',
         });
 
-        // 2. Get matches (people I've already swiped on)
         const { data: existingMatches } = await supabase
             .from('dating_matches')
             .select('liked_user_id')
             .eq('user_id', user.id);
 
         const seenIds = new Set(existingMatches?.map(m => m.liked_user_id) || []);
-        seenIds.add(user.id); // Don't show myself
+        seenIds.add(user.id);
 
-        // 3. Get potential profiles
-        // In a real app, use filters based on `dating_looking_for`, `dating_gender`, etc.
         const { data: others } = await supabase
             .from('profiles')
             .select('*')
             .not('id', 'in', `(${Array.from(seenIds).join(',')})`)
-            .eq('dating_enabled', true) // Only show people who opted in
+            .eq('dating_enabled', true)
             .limit(20);
 
         if (others) {
             const scoredProfiles = others.map(p => ({
                 ...p,
                 compatibility_score: calculateCompatibility(userData, p)
-            })).sort((a, b) => b.compatibility_score - a.compatibility_score); // Show best matches first
+            })).sort((a, b) => b.compatibility_score - a.compatibility_score);
 
             setProfiles(scoredProfiles);
         }
@@ -118,25 +107,22 @@ const Discover = () => {
         const currentProfile = profiles[currentIndex];
         if (!currentProfile || !user) return;
 
-        // Optimistic UI update
         setCurrentIndex(prev => prev + 1);
 
         if (action === 'like') {
-            toast.success(`Liked ${currentProfile.full_name?.split(' ')[0]}!`);
+            toast.success(`Liked ${currentProfile.full_name?.split(' ')[0]}! 💕`);
         }
 
-        // Save to Supabase
         const { error } = await supabase.from('dating_matches').insert({
             user_id: user.id,
             liked_user_id: currentProfile.id,
-            is_match: false, // Initial state, backend or logic should check for mutual match
+            is_match: false,
             compatibility_score: currentProfile.compatibility_score
         });
 
         if (error) {
             console.error("Error saving match:", error);
         } else {
-            // Check for mutual match (if they already liked me)
             const { data: theyLikedMe } = await supabase
                 .from('dating_matches')
                 .select('*')
@@ -145,11 +131,8 @@ const Discover = () => {
                 .single();
 
             if (theyLikedMe) {
-                toast.success("It's a Match! 🎉");
-                // Update both records to is_match = true
+                toast.success("It's a Match! 🎉✨");
                 await supabase.from('dating_matches').update({ is_match: true }).eq('id', theyLikedMe.id);
-                // We would need the ID of the record just inserted to update it too, 
-                // simplified here for demo.
             }
         }
     };
@@ -165,17 +148,18 @@ const Discover = () => {
         if (error) {
             toast.error("Failed to update settings");
         } else {
-            toast.success("Preferences updated");
+            toast.success("Preferences updated ✨");
             setShowSettings(false);
-            // Reload profiles based on new settings
             initDiscover();
         }
     };
 
-    // Render Logic
     if (loading) return (
-        <div className="flex items-center justify-center h-full p-8 text-muted-foreground animate-pulse">
-            Loading your matches...
+        <div className="flex items-center justify-center h-full p-8">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+                <p className="text-muted-foreground font-handwriting text-2xl">Finding your matches...</p>
+            </div>
         </div>
     );
 
@@ -183,59 +167,76 @@ const Discover = () => {
 
     if (!settings.dating_enabled) {
         return (
-            <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] p-8 text-center space-y-6 max-w-md mx-auto">
-                <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center">
-                    <Sparkles className="h-10 w-10 text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] p-8 text-center space-y-6 max-w-md mx-auto animate-fade-in">
+                <div 
+                    className="w-24 h-24 bg-accent/10 rounded-full flex items-center justify-center border-2 border-dashed border-accent/30"
+                    style={{ transform: 'rotate(-3deg)' }}
+                >
+                    <Sparkles className="h-12 w-12 text-accent" />
                 </div>
-                <div>
-                    <h2 className="text-2xl font-semibold mb-2">Enable Discovery?</h2>
-                    <p className="text-muted-foreground">Turn on this feature to find students with similar interests, study partners, or new friends.</p>
+                <div className="space-y-2">
+                    <h2 className="font-handwriting text-4xl">Ready to Discover?</h2>
+                    <p className="text-muted-foreground font-scribble text-lg">
+                        Find students with similar interests, study partners, or maybe even your campus crush! 💕
+                    </p>
                 </div>
-                <Button onClick={() => {
-                    setSettings(s => ({ ...s, dating_enabled: true }));
-                    // We'll save this when they confirm settings, or trigger a save now
-                    // For better UX, let's open settings dialog or just toggle it and save
-                    setShowSettings(true);
-                }} size="lg" className="w-full">
-                    Get Started
+                <Button 
+                    onClick={() => {
+                        setSettings(s => ({ ...s, dating_enabled: true }));
+                        setShowSettings(true);
+                    }} 
+                    size="lg" 
+                    className="w-full font-handwritingAlt text-lg h-14"
+                >
+                    Get Started →
                 </Button>
             </div>
         )
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-4 sm:p-8 h-[calc(100vh-4rem)] flex flex-col">
+        <div className="max-w-4xl mx-auto p-4 sm:p-8 h-[calc(100vh-4rem)] flex flex-col animate-fade-in">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                        Discover
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-scribble">
+                        <PenTool className="h-4 w-4" />
+                        <span>Find Your Match</span>
+                    </div>
+                    <h1 className="font-handwriting text-4xl flex items-center gap-2">
+                        <Sparkles className="h-6 w-6 text-accent" />
+                        Discover ✨
                     </h1>
-                    <p className="text-muted-foreground text-sm">Based on your interests & department.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setShowSettings(true)} className="gap-2">
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowSettings(true)} 
+                    className="gap-2 font-handwritingAlt border-2 border-dashed hover:border-solid"
+                >
                     <Settings className="h-4 w-4" />
                     Preferences
                 </Button>
             </div>
 
             <div className="flex-1 flex gap-6 overflow-hidden">
-                {/* Main Card Area */}
                 <div className="flex-1 flex flex-col items-center justify-center relative">
                     {currentProfile ? (
-                        <div className="w-full max-w-sm bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-full max-h-[650px] animate-in zoom-in-95 duration-300">
+                        <div 
+                            className="w-full max-w-sm bg-card border-2 border-dashed hover:border-solid rounded-2xl overflow-hidden flex flex-col h-full max-h-[650px] animate-scale-in shadow-paper-hover"
+                            style={{ transform: 'rotate(-0.5deg)' }}
+                        >
                             {/* Image Area */}
                             <div className="h-3/5 bg-muted/30 relative group overflow-hidden">
                                 {currentProfile.avatar_url ? (
                                     <img src={currentProfile.avatar_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" alt="Profile" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground bg-grid-pattern">
-                                        <span className="text-6xl font-serif opacity-20">{currentProfile.full_name?.[0]}</span>
+                                    <div className="w-full h-full flex items-center justify-center bg-accent/5">
+                                        <span className="font-handwriting text-8xl text-accent/30">{currentProfile.full_name?.[0]}</span>
                                     </div>
                                 )}
-                                <div className="absolute top-4 right-4 bg-background/90 backdrop-blur text-foreground text-xs font-medium px-2 py-1 rounded border border-border flex items-center gap-1">
-                                    <Sparkles className="h-3 w-3 text-yellow-500" />
+                                <div className="absolute top-4 right-4 bg-background/95 backdrop-blur text-foreground font-handwritingAlt px-3 py-1.5 rounded-lg border-2 border-accent/20 flex items-center gap-1.5">
+                                    <Heart className="h-4 w-4 text-accent fill-accent" />
                                     {currentProfile.compatibility_score}% Match
                                 </div>
                             </div>
@@ -244,8 +245,8 @@ const Discover = () => {
                             <div className="flex-1 p-6 flex flex-col justify-between bg-card">
                                 <div>
                                     <div className="mb-4">
-                                        <h2 className="text-2xl font-semibold tracking-tight">{currentProfile.full_name}</h2>
-                                        <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
+                                        <h2 className="font-handwriting text-3xl">{currentProfile.full_name}</h2>
+                                        <p className="text-muted-foreground font-scribble flex items-center gap-2 text-base">
                                             {currentProfile.department || 'Student'}
                                             {currentProfile.year_of_study && <span>• Year {currentProfile.year_of_study}</span>}
                                         </p>
@@ -253,21 +254,26 @@ const Discover = () => {
 
                                     <div className="space-y-4">
                                         {currentProfile.dating_bio ? (
-                                            <p className="text-sm leading-relaxed text-muted-foreground">
+                                            <p className="font-scribble text-base leading-relaxed text-muted-foreground italic">
                                                 "{currentProfile.dating_bio}"
                                             </p>
                                         ) : currentProfile.bio ? (
-                                            <p className="text-sm leading-relaxed text-muted-foreground">
+                                            <p className="font-scribble text-base leading-relaxed text-muted-foreground italic">
                                                 "{currentProfile.bio}"
                                             </p>
                                         ) : (
-                                            <p className="text-sm text-muted-foreground italic">No bio available.</p>
+                                            <p className="font-scribble text-base text-muted-foreground">No bio yet ✏️</p>
                                         )}
 
                                         {currentProfile.interests && (
                                             <div className="flex flex-wrap gap-2 pt-2">
                                                 {currentProfile.interests.slice(0, 4).map((tag, i) => (
-                                                    <Badge key={i} variant="secondary" className="font-normal border-border bg-muted/50">
+                                                    <Badge 
+                                                        key={i} 
+                                                        variant="secondary" 
+                                                        className="font-handwritingAlt text-sm border-2 border-dashed"
+                                                        style={{ transform: `rotate(${i % 2 === 0 ? '-1' : '1'}deg)` }}
+                                                    >
                                                         {tag}
                                                     </Badge>
                                                 ))}
@@ -282,28 +288,35 @@ const Discover = () => {
                                         variant="outline"
                                         size="lg"
                                         onClick={() => handleAction('pass')}
-                                        className="border-border hover:bg-destructive/5 hover:text-destructive hover:border-destructive/20 h-12"
+                                        className="border-2 border-dashed hover:border-solid hover:bg-destructive/5 hover:text-destructive hover:border-destructive/20 h-14 font-handwritingAlt text-lg"
                                     >
-                                        <X className="h-5 w-5" />
+                                        <X className="h-6 w-6 mr-1" />
+                                        Pass
                                     </Button>
                                     <Button
                                         size="lg"
                                         onClick={() => handleAction('like')}
-                                        className="bg-foreground text-background hover:bg-foreground/90 h-12"
+                                        className="bg-accent text-accent-foreground hover:bg-accent/90 h-14 font-handwritingAlt text-lg"
                                     >
-                                        <Check className="h-5 w-5" />
+                                        <Heart className="h-6 w-6 mr-1" />
+                                        Like
                                     </Button>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center p-12 border border-dashed border-border rounded-xl bg-muted/5 max-w-sm w-full mx-auto">
-                            <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Search className="h-8 w-8 text-muted-foreground/50" />
+                        <div 
+                            className="text-center p-12 border-2 border-dashed border-border rounded-2xl bg-card max-w-sm w-full mx-auto"
+                            style={{ transform: 'rotate(-1deg)' }}
+                        >
+                            <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-muted-foreground/20">
+                                <Search className="h-10 w-10 text-muted-foreground/40" />
                             </div>
-                            <h3 className="text-lg font-medium mb-2">No more profiles</h3>
-                            <p className="text-muted-foreground text-sm mb-6">Check back later for new students.</p>
-                            <Button variant="outline" onClick={() => initDiscover()}>Refresh</Button>
+                            <h3 className="font-handwriting text-2xl mb-2">That's everyone!</h3>
+                            <p className="text-muted-foreground font-scribble text-base mb-6">Check back later for new students ✨</p>
+                            <Button variant="outline" onClick={() => initDiscover()} className="font-handwritingAlt border-2 border-dashed hover:border-solid">
+                                Refresh
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -313,13 +326,13 @@ const Discover = () => {
             <Dialog open={showSettings} onOpenChange={setShowSettings}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Discovery Preferences</DialogTitle>
+                        <DialogTitle className="font-handwriting text-3xl">Preferences ⚙️</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-6 py-4">
-                        <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-muted/5">
+                        <div className="flex items-center justify-between p-4 border-2 border-dashed rounded-xl bg-muted/10">
                             <div className="space-y-0.5">
-                                <Label>Enable Discovery</Label>
-                                <p className="text-xs text-muted-foreground">Show me to others</p>
+                                <Label className="font-handwritingAlt text-base">Enable Discovery</Label>
+                                <p className="text-xs text-muted-foreground font-scribble">Show me to others</p>
                             </div>
                             <Switch
                                 checked={settings.dating_enabled}
@@ -328,22 +341,26 @@ const Discover = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label>I'm looking for</Label>
+                            <Label className="font-handwritingAlt text-base">I'm looking for</Label>
                             <Select
                                 value={settings.dating_looking_for}
                                 onValueChange={(val) => setSettings({ ...settings, dating_looking_for: val })}
                             >
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="friends">Friends</SelectItem>
-                                    <SelectItem value="study">Study Partners</SelectItem>
-                                    <SelectItem value="dating">Relatonship</SelectItem>
-                                    <SelectItem value="mentor">Mentorship</SelectItem>
+                                <SelectTrigger className="border-2 border-dashed focus:border-solid font-scribble">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="font-scribble">
+                                    <SelectItem value="friends">Friends 👋</SelectItem>
+                                    <SelectItem value="study">Study Partners 📚</SelectItem>
+                                    <SelectItem value="dating">Relationship 💕</SelectItem>
+                                    <SelectItem value="mentor">Mentorship 🎓</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        <Button className="w-full" onClick={updateSettings}>Save Changes</Button>
+                        <Button className="w-full font-handwritingAlt text-lg h-12" onClick={updateSettings}>
+                            Save Changes ✓
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>
