@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Inter:wght@300;400;500;600&display=swap');
+/* Times New Roman - System Font, no import needed */
 
 @tailwind base;
 @tailwind components;
@@ -133,7 +133,7 @@
   }
 
   html {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-family: 'Times New Roman', Times, serif;
   }
 
   body {
@@ -142,25 +142,15 @@
     background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
   }
 
-  /* Handwritten style headings */
-  h1 {
-    font-family: 'Caveat', cursive;
-    @apply font-bold tracking-wide;
-  }
-
-  h2 {
-    font-family: 'Caveat', cursive;
-    @apply font-semibold tracking-wide;
-  }
-
-  h3, h4 {
-    font-family: 'Patrick Hand', cursive;
-    @apply font-medium;
+  /* Classic serif headings */
+  h1, h2, h3, h4 {
+    font-family: 'Times New Roman', Times, serif;
+    @apply font-bold tracking-normal;
   }
 
   /* Monospace for labels/tags */
   .font-mono {
-    font-family: 'Kalam', cursive;
+    font-family: 'Courier New', Courier, monospace;
   }
 }
 
@@ -203,7 +193,7 @@
   /* Doodle Button */
   .btn-doodle {
     @apply rounded-lg font-medium transition-all active:scale-95 border-2 border-dashed;
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Times New Roman', Times, serif;
   }
 
   .btn-doodle:hover {
@@ -278,17 +268,17 @@
     @apply bg-green-200/60 dark:bg-green-900/40 px-1 rounded-sm;
   }
 
-  /* Handwritten text utilities */
+  /* Serif text utilities */
   .font-handwriting {
-    font-family: 'Caveat', cursive;
+    font-family: 'Times New Roman', Times, serif;
   }
 
   .font-handwriting-alt {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Times New Roman', Times, serif;
   }
 
   .font-scribble {
-    font-family: 'Kalam', cursive;
+    font-family: 'Times New Roman', Times, serif;
   }
 
   /* Dot grid background */
@@ -323,6 +313,6 @@
   /* Checkbox style */
   .checkbox-hand {
     @apply w-5 h-5 border-2 border-foreground rounded-sm;
-    font-family: 'Caveat', cursive;
+    font-family: 'Times New Roman', Times, serif;
   }
 }

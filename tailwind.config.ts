@@ -22,10 +22,11 @@ export default {
         xs: "475px",
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        handwriting: ["Caveat", "cursive"],
-        handwritingAlt: ["Patrick Hand", "cursive"],
-        scribble: ["Kalam", "cursive"],
+        sans: ["Times New Roman", "Times", "serif"],
+        serif: ["Times New Roman", "Times", "serif"],
+        handwriting: ["Times New Roman", "Times", "serif"],
+        handwritingAlt: ["Times New Roman", "Times", "serif"],
+        scribble: ["Times New Roman", "Times", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
