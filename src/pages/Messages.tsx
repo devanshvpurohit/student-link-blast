@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, MessageCircle, PenTool } from 'lucide-react';
+import { Send, MessageCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -111,7 +111,7 @@ const Messages = () => {
 
     if (error) {
       toast({
-        title: "Oops!",
+        title: "Error",
         description: "Failed to load connections",
         variant: "destructive",
       });
@@ -155,7 +155,7 @@ const Messages = () => {
 
     if (error) {
       toast({
-        title: "Oops!",
+        title: "Error",
         description: "Failed to load messages",
         variant: "destructive",
       });
@@ -205,7 +205,7 @@ const Messages = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
-        title: "Oops!",
+        title: "Error",
         description: "Failed to send message",
         variant: "destructive",
       });
@@ -255,14 +255,14 @@ const Messages = () => {
       setShowVoiceRecorder(false);
       
       toast({
-        title: "Sent! 🎤",
+        title: "Sent",
         description: "Voice message delivered",
       });
       
     } catch (error) {
       console.error('Error sending voice note:', error);
       toast({
-        title: "Oops!",
+        title: "Error",
         description: "Failed to send voice message",
         variant: "destructive",
       });
@@ -272,65 +272,61 @@ const Messages = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col lg:flex-row animate-fade-in">
+    <div className="h-screen flex flex-col lg:flex-row animate-in">
       {/* Connections Sidebar */}
       <div className="lg:w-80 border-r lg:border-b-0 border-b bg-card">
         <div className="p-4 border-b">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm font-scribble mb-1">
-            <PenTool className="h-4 w-4" />
-            <span>Your Chats</span>
-          </div>
-          <h2 className="font-handwriting text-3xl">Messages 💬</h2>
+          <p className="text-sm text-muted-foreground mb-1">Your Chats</p>
+          <h2 className="text-2xl font-bold tracking-tight">Messages</h2>
         </div>
         
         <ScrollArea className="h-48 lg:h-[calc(100vh-100px)]">
           <div className="p-2">
             {connections.length === 0 ? (
               <div className="text-center py-8 px-4">
-                <p className="font-scribble text-muted-foreground">No connections yet!</p>
-                <p className="text-sm text-muted-foreground mt-1 font-scribble">Start connecting with others ✨</p>
+                <p className="text-muted-foreground">No connections yet</p>
+                <p className="text-sm text-muted-foreground mt-1">Start connecting with others</p>
               </div>
             ) : (
-              connections.map((connection, i) => (
+              connections.map((connection) => (
                 <div
                   key={connection.id}
-                  style={{ transform: `rotate(${i % 2 === 0 ? '-0.3' : '0.3'}deg)` }}
-                  className={`p-3 rounded-xl cursor-pointer transition-all border-2 mb-2 ${
+                  className={`p-3 rounded-md cursor-pointer transition-colors mb-1 ${
                     selectedConnection?.id === connection.id 
-                      ? 'bg-accent/10 border-accent/30' 
-                      : 'border-transparent hover:border-border hover:bg-muted/30'
+                      ? 'bg-accent/10' 
+                      : 'hover:bg-muted'
                   }`}
                   onClick={() => setSelectedConnection(connection)}
                 >
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-10 w-10 border-2 border-border">
+                    <Avatar className="h-10 w-10 border border-border">
                       <AvatarImage src={connection.other_profile.avatar_url} />
-                      <AvatarFallback className="font-handwriting text-lg bg-accent/10 text-accent">
+                      <AvatarFallback className="bg-accent/10 text-accent">
                         {connection.other_profile.full_name?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-handwritingAlt text-base truncate">
+                        <h3 className="font-medium text-sm truncate">
                           {connection.other_profile.full_name}
                         </h3>
-                        <Badge variant="secondary" className="text-xs hidden lg:block font-scribble">
+                        <Badge variant="secondary" className="text-xs hidden lg:block">
                           {connection.connection_type}
                         </Badge>
                       </div>
                       
                       {connection.last_message && (
-                        <div className="text-sm text-muted-foreground font-scribble">
+                        <div className="text-xs text-muted-foreground">
                           <p className="truncate">
                             {connection.last_message.sender_id === user?.id && 'You: '}
                             {connection.last_message.voice_note_url 
-                              ? '🎤 Voice message' 
+                              ? 'Voice message' 
                               : connection.last_message.image_url 
-                                ? '📷 Photo'
+                                ? 'Photo'
                                 : connection.last_message.content}
                           </p>
-                          <p className="text-xs">
+                          <p className="text-xs mt-0.5">
                             {formatDistanceToNow(new Date(connection.last_message.created_at), { addSuffix: true })}
                           </p>
                         </div>
@@ -351,16 +347,16 @@ const Messages = () => {
             {/* Chat Header */}
             <div className="p-4 border-b bg-card">
               <div className="flex items-center space-x-3">
-                <Avatar className="h-10 w-10 border-2 border-accent/20">
+                <Avatar className="h-10 w-10 border border-accent/20">
                   <AvatarImage src={selectedConnection.other_profile.avatar_url} />
-                  <AvatarFallback className="font-handwriting text-lg bg-accent/10 text-accent">
+                  <AvatarFallback className="bg-accent/10 text-accent">
                     {selectedConnection.other_profile.full_name?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-handwritingAlt text-lg">{selectedConnection.other_profile.full_name}</h3>
-                  <Badge variant="secondary" className="text-xs font-scribble">
-                    {selectedConnection.connection_type} connection
+                  <h3 className="font-medium">{selectedConnection.other_profile.full_name}</h3>
+                  <Badge variant="secondary" className="text-xs">
+                    {selectedConnection.connection_type}
                   </Badge>
                 </div>
               </div>
@@ -369,7 +365,7 @@ const Messages = () => {
             {/* Messages */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
-                {messages.map((message, i) => {
+                {messages.map((message) => {
                   const isMe = message.sender_id === user?.id;
                   
                   return (
@@ -377,18 +373,15 @@ const Messages = () => {
                       key={message.id}
                       className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div 
-                        className={`flex items-start space-x-2 max-w-[85%] lg:max-w-[70%] ${isMe ? 'flex-row-reverse space-x-reverse' : ''}`}
-                        style={{ transform: `rotate(${i % 3 === 0 ? '-0.5' : i % 3 === 1 ? '0.5' : '0'}deg)` }}
-                      >
-                        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-border">
+                      <div className={`flex items-start space-x-2 max-w-[85%] lg:max-w-[70%] ${isMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                        <Avatar className="h-8 w-8 flex-shrink-0 border border-border">
                           <AvatarImage src={message.profiles.avatar_url} />
-                          <AvatarFallback className="text-xs font-handwriting">
+                          <AvatarFallback className="text-xs">
                             {message.profiles.full_name?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         
-                        <div className={`rounded-2xl p-3 ${isMe ? 'bg-accent text-accent-foreground' : 'bg-muted border-2 border-dashed border-border'}`}>
+                        <div className={`rounded-lg p-3 ${isMe ? 'bg-accent text-accent-foreground' : 'bg-muted'}`}>
                           {message.voice_note_url ? (
                             <VoiceNotePlayer 
                               audioUrl={message.voice_note_url} 
@@ -397,9 +390,9 @@ const Messages = () => {
                           ) : message.image_url ? (
                             <ImageMessage imageUrl={message.image_url} />
                           ) : (
-                            <p className="font-scribble text-base whitespace-pre-wrap">{message.content}</p>
+                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                           )}
-                          <p className={`text-xs mt-1 font-scribble ${isMe ? 'text-accent-foreground/70' : 'text-muted-foreground'}`}>
+                          <p className={`text-xs mt-1 ${isMe ? 'text-accent-foreground/70' : 'text-muted-foreground'}`}>
                             {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                           </p>
                         </div>
@@ -420,15 +413,15 @@ const Messages = () => {
               ) : (
                 <div className="space-y-2">
                   {selectedImage && (
-                    <div className="flex items-center gap-2 p-2 bg-muted rounded-lg border-2 border-dashed">
-                      <div className="relative w-16 h-16 rounded-lg overflow-hidden">
+                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                      <div className="relative w-12 h-12 rounded overflow-hidden">
                         <img 
                           src={URL.createObjectURL(selectedImage)} 
                           alt="Selected" 
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-sm text-muted-foreground flex-1 truncate font-scribble">
+                      <span className="text-sm text-muted-foreground flex-1 truncate">
                         {selectedImage.name}
                       </span>
                       <Button
@@ -447,9 +440,8 @@ const Messages = () => {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder="Type a message... ✏️"
+                      placeholder="Type a message..."
                       disabled={loading}
-                      className="font-scribble border-2 border-dashed focus:border-solid focus:border-accent"
                     />
                     <div className="flex space-x-1">
                       <ImagePicker
@@ -465,9 +457,9 @@ const Messages = () => {
                         onClick={sendMessage} 
                         disabled={loading || (!newMessage.trim() && !selectedImage)}
                         size="sm"
-                        className="px-4"
+                        className="btn-accent px-4"
                       >
-                        <Send className="h-4 w-4" />
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
@@ -477,15 +469,12 @@ const Messages = () => {
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <div 
-              className="text-center p-8 border-2 border-dashed rounded-2xl max-w-sm mx-4"
-              style={{ transform: 'rotate(-1deg)' }}
-            >
-              <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-accent/30">
-                <MessageCircle className="h-10 w-10 text-accent" />
+            <div className="text-center p-8 card-elevated max-w-sm mx-4">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageCircle className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="font-handwriting text-2xl mb-2">Start chatting! 💬</h3>
-              <p className="text-muted-foreground font-scribble">Choose a connection to begin messaging</p>
+              <h3 className="text-xl font-semibold mb-2">Select a conversation</h3>
+              <p className="text-muted-foreground text-sm">Choose a connection to start chatting</p>
             </div>
           </div>
         )}

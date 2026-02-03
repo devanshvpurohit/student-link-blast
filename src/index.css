@@ -1,4 +1,4 @@
-/* Times New Roman - System Font, no import needed */
+/* Refined Times New Roman based design system */
 
 @tailwind base;
 @tailwind components;
@@ -6,124 +6,124 @@
 
 @layer base {
   :root {
-    /* Notebook Light Mode - Cream Paper */
-    --background: 45 30% 96%;
-    /* Warm cream paper */
-    --foreground: 220 15% 15%;
-    /* Dark ink */
+    /* Light Mode - Clean Paper */
+    --background: 40 20% 97%;
+    --foreground: 220 20% 12%;
 
-    --card: 45 25% 98%;
-    /* Slightly lighter paper for cards */
-    --card-foreground: 220 15% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
 
-    --popover: 45 25% 98%;
-    --popover-foreground: 220 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
 
-    /* Muted - Pencil gray tones */
-    --muted: 40 15% 92%;
-    --muted-foreground: 220 10% 45%;
+    /* Muted tones */
+    --muted: 220 10% 94%;
+    --muted-foreground: 220 10% 40%;
 
-    /* Borders like notebook lines */
-    --border: 220 10% 80%;
-    --input: 220 10% 85%;
+    /* Clean borders */
+    --border: 220 10% 88%;
+    --input: 220 10% 90%;
 
-    /* Primary - Ink Black for main actions */
-    --primary: 220 15% 15%;
-    --primary-foreground: 45 30% 96%;
+    /* Primary - Deep ink black */
+    --primary: 220 20% 12%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Soft gray */
-    --secondary: 40 10% 90%;
-    --secondary-foreground: 220 15% 20%;
+    /* Secondary */
+    --secondary: 220 8% 94%;
+    --secondary-foreground: 220 20% 15%;
 
-    /* Accent - Coral red for highlights (like pen marks) */
-    --accent: 8 80% 60%;
+    /* Accent - Warm coral */
+    --accent: 8 75% 58%;
     --accent-foreground: 0 0% 100%;
 
-    /* Success - Green check marks */
-    --success: 142 70% 45%;
+    /* Success */
+    --success: 145 65% 42%;
     --success-foreground: 0 0% 100%;
 
-    /* Dating - Coral accent */
-    --dating: 8 80% 60%;
+    /* Dating colors */
+    --dating: 8 75% 58%;
     --dating-foreground: 0 0% 100%;
-    --dating-like: 142 70% 50%;
-    --dating-nope: 0 70% 55%;
+    --dating-like: 145 65% 48%;
+    --dating-nope: 0 65% 52%;
 
-    --destructive: 0 70% 55%;
+    --destructive: 0 65% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --ring: 8 80% 60%;
-    --radius: 0.75rem;
+    --ring: 8 75% 58%;
+    --radius: 0.5rem;
 
-    /* Shadows - Soft pencil shadows */
-    --shadow-glow: 0 2px 10px -2px hsl(220 15% 15% / 0.1);
-    --shadow-glow-accent: 0 4px 15px -3px hsl(8 80% 60% / 0.3);
+    /* Refined shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 20% 12% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(220 20% 12% / 0.08);
+    --shadow-lg: 0 8px 24px -4px hsl(220 20% 12% / 0.12);
+    --shadow-accent: 0 4px 16px -4px hsl(8 75% 58% / 0.25);
 
-    /* Sidebar - Slightly tinted paper */
-    --sidebar-background: 40 20% 95%;
-    --sidebar-foreground: 220 15% 25%;
-    --sidebar-border: 220 10% 85%;
-    --sidebar-primary: 220 15% 15%;
-    --sidebar-primary-foreground: 45 30% 96%;
-    --sidebar-accent: 8 80% 60%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 20%;
+    --sidebar-border: 220 10% 90%;
+    --sidebar-primary: 220 20% 12%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 8 75% 58%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-ring: 8 80% 60%;
+    --sidebar-ring: 8 75% 58%;
   }
 
   .dark {
-    /* Notebook Dark Mode - Chalkboard */
-    --background: 220 20% 10%;
-    /* Dark slate */
-    --foreground: 45 20% 90%;
-    /* Chalk white */
+    /* Dark Mode - Elegant dark slate */
+    --background: 225 20% 8%;
+    --foreground: 40 10% 94%;
 
-    --card: 220 18% 14%;
-    --card-foreground: 45 20% 90%;
+    --card: 225 18% 11%;
+    --card-foreground: 40 10% 94%;
 
-    --popover: 220 18% 14%;
-    --popover-foreground: 45 20% 90%;
+    --popover: 225 18% 11%;
+    --popover-foreground: 40 10% 94%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 45 15% 60%;
+    --muted: 225 15% 15%;
+    --muted-foreground: 220 10% 55%;
 
-    --border: 220 15% 22%;
-    --input: 220 15% 22%;
+    --border: 225 15% 18%;
+    --input: 225 15% 18%;
 
-    /* Primary - Chalk white */
-    --primary: 45 20% 90%;
-    --primary-foreground: 220 20% 10%;
+    /* Primary - Warm white */
+    --primary: 40 10% 94%;
+    --primary-foreground: 225 20% 8%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 45 20% 90%;
+    --secondary: 225 15% 15%;
+    --secondary-foreground: 40 10% 90%;
 
-    /* Accent - Coral chalk */
-    --accent: 8 70% 55%;
+    /* Accent - Bright coral */
+    --accent: 8 72% 58%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 142 60% 50%;
+    --success: 145 55% 50%;
     --success-foreground: 0 0% 100%;
 
-    --dating: 8 70% 55%;
+    --dating: 8 72% 58%;
     --dating-foreground: 0 0% 100%;
-    --dating-like: 142 60% 55%;
-    --dating-nope: 0 60% 50%;
+    --dating-like: 145 55% 55%;
+    --dating-nope: 0 55% 55%;
 
-    --destructive: 0 60% 50%;
-    --destructive-foreground: 45 20% 95%;
+    --destructive: 0 55% 55%;
+    --destructive-foreground: 40 10% 98%;
 
-    --ring: 8 70% 55%;
+    --ring: 8 72% 58%;
 
-    --shadow-glow: 0 2px 10px -2px hsl(0 0% 0% / 0.3);
-    --shadow-glow-accent: 0 4px 15px -3px hsl(8 70% 55% / 0.4);
+    /* Dark shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 8px 24px -4px hsl(0 0% 0% / 0.4);
+    --shadow-accent: 0 4px 16px -4px hsl(8 72% 58% / 0.35);
 
-    --sidebar-background: 220 18% 12%;
-    --sidebar-foreground: 45 20% 85%;
-    --sidebar-border: 220 15% 20%;
-    --sidebar-primary: 45 20% 90%;
-    --sidebar-primary-foreground: 220 20% 10%;
-    --sidebar-accent: 8 70% 55%;
+    --sidebar-background: 225 18% 10%;
+    --sidebar-foreground: 40 10% 88%;
+    --sidebar-border: 225 15% 16%;
+    --sidebar-primary: 40 10% 94%;
+    --sidebar-primary-foreground: 225 20% 8%;
+    --sidebar-accent: 8 72% 58%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-ring: 8 70% 55%;
+    --sidebar-ring: 8 72% 58%;
   }
 }
 
@@ -133,186 +133,284 @@
   }
 
   html {
-    font-family: 'Times New Roman', Times, serif;
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
     @apply bg-background text-foreground;
-    /* Subtle paper texture */
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+    font-size: 16px;
+    line-height: 1.6;
   }
 
-  /* Classic serif headings */
-  h1, h2, h3, h4 {
-    font-family: 'Times New Roman', Times, serif;
-    @apply font-bold tracking-normal;
+  /* Refined typography hierarchy */
+  h1 {
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    @apply font-bold tracking-tight;
+    font-size: 2.5rem;
+    line-height: 1.2;
   }
 
-  /* Monospace for labels/tags */
+  h2 {
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    @apply font-semibold tracking-tight;
+    font-size: 1.875rem;
+    line-height: 1.25;
+  }
+
+  h3 {
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    @apply font-semibold;
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  h4 {
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    @apply font-medium;
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+
+  /* Monospace for code/labels */
   .font-mono {
     font-family: 'Courier New', Courier, monospace;
+  }
+
+  /* Better focus states */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-background;
   }
 }
 
 @layer components {
-  /* Notebook Paper Card */
-  .paper-card {
-    @apply bg-card border border-border rounded-lg relative;
-    background-image: 
-      repeating-linear-gradient(
-        transparent,
-        transparent 27px,
-        hsl(var(--border) / 0.5) 27px,
-        hsl(var(--border) / 0.5) 28px
-      );
-    background-position: 0 8px;
+  /* Refined card styles */
+  .card-elevated {
+    @apply bg-card border border-border rounded-lg;
+    box-shadow: var(--shadow-md);
   }
 
-  /* Sticky Note Style */
-  .sticky-note {
-    @apply bg-yellow-100 dark:bg-yellow-900/40 p-4 rounded shadow-md;
-    transform: rotate(-1deg);
+  .card-elevated:hover {
+    box-shadow: var(--shadow-lg);
   }
 
-  .sticky-note-pink {
-    @apply bg-pink-100 dark:bg-pink-900/40 p-4 rounded shadow-md;
-    transform: rotate(1deg);
+  /* Interactive card */
+  .card-interactive {
+    @apply bg-card border border-border rounded-lg transition-all duration-200 cursor-pointer;
+    box-shadow: var(--shadow-sm);
   }
 
-  .sticky-note-blue {
-    @apply bg-blue-100 dark:bg-blue-900/40 p-4 rounded shadow-md;
-    transform: rotate(-0.5deg);
+  .card-interactive:hover {
+    @apply border-accent/40;
+    box-shadow: var(--shadow-accent);
+    transform: translateY(-1px);
   }
 
-  /* Tape effect for sticky notes */
-  .tape {
-    @apply absolute -top-3 left-1/2 -translate-x-1/2 w-12 h-5 bg-yellow-200/80 dark:bg-yellow-800/60 rounded-sm;
-    transform: rotate(-2deg);
+  /* Primary button refinement */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground rounded-md px-4 py-2 font-medium transition-all duration-200;
+    box-shadow: var(--shadow-sm);
   }
 
-  /* Doodle Button */
-  .btn-doodle {
-    @apply rounded-lg font-medium transition-all active:scale-95 border-2 border-dashed;
-    font-family: 'Times New Roman', Times, serif;
+  .btn-primary:hover {
+    @apply opacity-90;
+    box-shadow: var(--shadow-md);
   }
 
-  .btn-doodle:hover {
-    @apply border-solid;
+  .btn-primary:active {
+    transform: scale(0.98);
   }
 
-  /* Sketch Underline */
-  .sketch-underline {
-    @apply relative inline-block;
+  /* Accent button */
+  .btn-accent {
+    @apply bg-accent text-accent-foreground rounded-md px-4 py-2 font-medium transition-all duration-200;
+    box-shadow: var(--shadow-sm);
   }
 
-  .sketch-underline::after {
-    content: '';
-    @apply absolute bottom-0 left-0 w-full h-0.5 bg-accent;
-    transform: skewX(-3deg);
+  .btn-accent:hover {
+    box-shadow: var(--shadow-accent);
   }
 
-  /* Sidebar notebook styling */
+  /* Ghost button */
+  .btn-ghost {
+    @apply bg-transparent text-foreground rounded-md px-4 py-2 font-medium transition-all duration-200;
+  }
+
+  .btn-ghost:hover {
+    @apply bg-muted;
+  }
+
+  /* Sidebar styles */
   .sidebar {
     @apply bg-sidebar-background border-r border-sidebar-border h-screen sticky top-0;
   }
 
-  /* Note-style card with subtle shadow */
-  .note-card {
-    @apply bg-card border border-border rounded-xl transition-all duration-200;
-    box-shadow: var(--shadow-glow);
+  /* Nav item styles */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all duration-150;
   }
 
-  .note-card:hover {
-    @apply border-accent/30;
-    box-shadow: var(--shadow-glow-accent);
+  .nav-item-active {
+    @apply bg-accent/10 text-accent font-medium;
   }
 
-  /* Lined paper background */
-  .lined-paper {
-    background-image: 
-      linear-gradient(90deg, hsl(var(--accent) / 0.1) 1px, transparent 1px),
-      repeating-linear-gradient(
-        transparent,
-        transparent 27px,
-        hsl(var(--border) / 0.4) 27px,
-        hsl(var(--border) / 0.4) 28px
-      );
-    background-size: 28px 28px, 100% 28px;
-    background-position: 48px 0, 0 8px;
+  .nav-item-inactive {
+    @apply text-muted-foreground hover:bg-muted hover:text-foreground;
   }
 
-  /* Margin line for notebook effect */
-  .margin-line {
-    @apply border-l-2 border-accent/20 pl-4 ml-4;
+  /* Input refinement */
+  .input-refined {
+    @apply w-full px-3 py-2.5 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground transition-all duration-200;
+  }
+
+  .input-refined:focus {
+    @apply border-accent ring-2 ring-accent/20;
+  }
+
+  /* Badge styles */
+  .badge-accent {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent;
+  }
+
+  .badge-muted {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground;
+  }
+
+  /* Divider */
+  .divider {
+    @apply h-px w-full bg-border;
+  }
+
+  /* Section container */
+  .section {
+    @apply py-6 sm:py-8;
+  }
+
+  /* Container width */
+  .container-narrow {
+    @apply max-w-2xl mx-auto px-4 sm:px-6;
+  }
+
+  .container-wide {
+    @apply max-w-5xl mx-auto px-4 sm:px-6;
+  }
+
+  /* Feature grid */
+  .feature-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+
+  /* Avatar with border */
+  .avatar-bordered {
+    @apply rounded-full border-2 border-border;
+  }
+
+  .avatar-bordered-accent {
+    @apply rounded-full border-2 border-accent/30;
   }
 }
 
 @layer utilities {
-  /* Highlighter Effects */
-  .highlight-yellow {
-    @apply bg-yellow-200/60 dark:bg-yellow-900/40 px-1 rounded-sm;
-    text-decoration: underline;
-    text-decoration-color: hsl(45 100% 50% / 0.5);
-    text-underline-offset: 2px;
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
   }
 
-  .highlight-coral {
-    @apply bg-red-200/60 dark:bg-red-900/40 px-1 rounded-sm;
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-accent/70;
   }
 
-  .highlight-blue {
-    @apply bg-blue-200/60 dark:bg-blue-900/40 px-1 rounded-sm;
+  /* Subtle background gradient */
+  .bg-subtle-gradient {
+    @apply bg-gradient-to-b from-background to-muted/30;
   }
 
-  .highlight-green {
-    @apply bg-green-200/60 dark:bg-green-900/40 px-1 rounded-sm;
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-transform duration-200;
   }
 
-  /* Serif text utilities */
-  .font-handwriting {
-    font-family: 'Times New Roman', Times, serif;
+  .hover-lift:hover {
+    transform: translateY(-2px);
   }
 
-  .font-handwriting-alt {
-    font-family: 'Times New Roman', Times, serif;
+  /* Fade in animation */
+  .animate-in {
+    animation: fadeIn 0.3s ease-out;
   }
 
-  .font-scribble {
-    font-family: 'Times New Roman', Times, serif;
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  /* Dot grid background */
-  .bg-dot-grid {
-    background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
-    background-size: 20px 20px;
-    opacity: 0.08;
+  /* Smooth scale */
+  .scale-on-press:active {
+    transform: scale(0.97);
   }
 
-  /* Squiggly underline animation */
-  .squiggle-underline {
-    text-decoration: underline;
-    text-decoration-style: wavy;
-    text-decoration-color: hsl(var(--accent));
-    text-underline-offset: 3px;
+  /* Truncate with ellipsis */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
-  /* Rotate utilities for organic feel */
-  .rotate-slight-left {
-    transform: rotate(-1deg);
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
-  .rotate-slight-right {
-    transform: rotate(1deg);
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
   }
 
-  /* Scribble border */
-  .border-scribble {
-    @apply border-2 border-dashed border-border rounded-lg;
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
   }
 
-  /* Checkbox style */
-  .checkbox-hand {
-    @apply w-5 h-5 border-2 border-foreground rounded-sm;
-    font-family: 'Times New Roman', Times, serif;
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Glass effect for overlays */
+  .glass {
+    @apply bg-background/80 backdrop-blur-md;
+  }
+
+  .glass-dark {
+    @apply bg-background/90 backdrop-blur-lg;
   }
 }
