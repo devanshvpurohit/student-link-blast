@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
-    Sparkles, Settings, X, Check, Search, Heart, PenTool
+    Sparkles, Settings, X, Check, Search, Heart, Loader2
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Database } from "@/integrations/supabase/types";
@@ -110,7 +110,7 @@ const Discover = () => {
         setCurrentIndex(prev => prev + 1);
 
         if (action === 'like') {
-            toast.success(`Liked ${currentProfile.full_name?.split(' ')[0]}! 💕`);
+            toast.success(`Liked ${currentProfile.full_name?.split(' ')[0]}!`);
         }
 
         const { error } = await supabase.from('dating_matches').insert({
@@ -131,7 +131,7 @@ const Discover = () => {
                 .single();
 
             if (theyLikedMe) {
-                toast.success("It's a Match! 🎉✨");
+                toast.success("It's a Match!");
                 await supabase.from('dating_matches').update({ is_match: true }).eq('id', theyLikedMe.id);
             }
         }
@@ -148,7 +148,7 @@ const Discover = () => {
         if (error) {
             toast.error("Failed to update settings");
         } else {
-            toast.success("Preferences updated ✨");
+            toast.success("Preferences updated");
             setShowSettings(false);
             initDiscover();
         }
@@ -157,8 +157,8 @@ const Discover = () => {
     if (loading) return (
         <div className="flex items-center justify-center h-full p-8">
             <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
-                <p className="text-muted-foreground font-handwriting text-2xl">Finding your matches...</p>
+                <Loader2 className="h-8 w-8 animate-spin text-accent mx-auto mb-4" />
+                <p className="text-muted-foreground">Finding matches...</p>
             </div>
         </div>
     );
@@ -167,17 +167,14 @@ const Discover = () => {
 
     if (!settings.dating_enabled) {
         return (
-            <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] p-8 text-center space-y-6 max-w-md mx-auto animate-fade-in">
-                <div 
-                    className="w-24 h-24 bg-accent/10 rounded-full flex items-center justify-center border-2 border-dashed border-accent/30"
-                    style={{ transform: 'rotate(-3deg)' }}
-                >
-                    <Sparkles className="h-12 w-12 text-accent" />
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] p-8 text-center space-y-6 max-w-md mx-auto animate-in">
+                <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center">
+                    <Sparkles className="h-10 w-10 text-accent" />
                 </div>
                 <div className="space-y-2">
-                    <h2 className="font-handwriting text-4xl">Ready to Discover?</h2>
-                    <p className="text-muted-foreground font-scribble text-lg">
-                        Find students with similar interests, study partners, or maybe even your campus crush! 💕
+                    <h2 className="text-3xl font-bold tracking-tight">Ready to Discover?</h2>
+                    <p className="text-muted-foreground">
+                        Find students with similar interests, study partners, or maybe even your campus match.
                     </p>
                 </div>
                 <Button 
@@ -186,153 +183,131 @@ const Discover = () => {
                         setShowSettings(true);
                     }} 
                     size="lg" 
-                    className="w-full font-handwritingAlt text-lg h-14"
+                    className="btn-accent w-full max-w-xs"
                 >
-                    Get Started →
+                    Get Started
                 </Button>
             </div>
         )
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-4 sm:p-8 h-[calc(100vh-4rem)] flex flex-col animate-fade-in">
+        <div className="container-wide py-6 sm:py-10 h-[calc(100vh-4rem)] flex flex-col animate-in">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-scribble">
-                        <PenTool className="h-4 w-4" />
-                        <span>Find Your Match</span>
-                    </div>
-                    <h1 className="font-handwriting text-4xl flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground">Find Your Match</p>
+                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
                         <Sparkles className="h-6 w-6 text-accent" />
-                        Discover ✨
+                        Discover
                     </h1>
                 </div>
                 <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={() => setShowSettings(true)} 
-                    className="gap-2 font-handwritingAlt border-2 border-dashed hover:border-solid"
+                    className="gap-2"
                 >
                     <Settings className="h-4 w-4" />
                     Preferences
                 </Button>
             </div>
 
-            <div className="flex-1 flex gap-6 overflow-hidden">
-                <div className="flex-1 flex flex-col items-center justify-center relative">
-                    {currentProfile ? (
-                        <div 
-                            className="w-full max-w-sm bg-card border-2 border-dashed hover:border-solid rounded-2xl overflow-hidden flex flex-col h-full max-h-[650px] animate-scale-in shadow-paper-hover"
-                            style={{ transform: 'rotate(-0.5deg)' }}
-                        >
-                            {/* Image Area */}
-                            <div className="h-3/5 bg-muted/30 relative group overflow-hidden">
-                                {currentProfile.avatar_url ? (
-                                    <img src={currentProfile.avatar_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" alt="Profile" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-accent/5">
-                                        <span className="font-handwriting text-8xl text-accent/30">{currentProfile.full_name?.[0]}</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 bg-background/95 backdrop-blur text-foreground font-handwritingAlt px-3 py-1.5 rounded-lg border-2 border-accent/20 flex items-center gap-1.5">
-                                    <Heart className="h-4 w-4 text-accent fill-accent" />
-                                    {currentProfile.compatibility_score}% Match
+            <div className="flex-1 flex items-center justify-center">
+                {currentProfile ? (
+                    <div className="w-full max-w-sm card-elevated overflow-hidden flex flex-col h-full max-h-[600px]">
+                        {/* Image Area */}
+                        <div className="h-3/5 bg-muted relative group overflow-hidden">
+                            {currentProfile.avatar_url ? (
+                                <img src={currentProfile.avatar_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" alt="Profile" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-accent/5">
+                                    <span className="text-8xl text-accent/30 font-bold">{currentProfile.full_name?.[0]}</span>
                                 </div>
+                            )}
+                            <div className="absolute top-4 right-4 glass text-foreground px-3 py-1.5 rounded-md border border-border flex items-center gap-1.5 text-sm font-medium">
+                                <Heart className="h-4 w-4 text-accent fill-accent" />
+                                {currentProfile.compatibility_score}%
                             </div>
+                        </div>
 
-                            {/* Content Area */}
-                            <div className="flex-1 p-6 flex flex-col justify-between bg-card">
-                                <div>
-                                    <div className="mb-4">
-                                        <h2 className="font-handwriting text-3xl">{currentProfile.full_name}</h2>
-                                        <p className="text-muted-foreground font-scribble flex items-center gap-2 text-base">
-                                            {currentProfile.department || 'Student'}
-                                            {currentProfile.year_of_study && <span>• Year {currentProfile.year_of_study}</span>}
+                        {/* Content Area */}
+                        <div className="flex-1 p-5 flex flex-col justify-between bg-card">
+                            <div>
+                                <div className="mb-3">
+                                    <h2 className="text-2xl font-bold tracking-tight">{currentProfile.full_name}</h2>
+                                    <p className="text-muted-foreground text-sm">
+                                        {currentProfile.department || 'Student'}
+                                        {currentProfile.year_of_study && ` • Year ${currentProfile.year_of_study}`}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {(currentProfile.dating_bio || currentProfile.bio) && (
+                                        <p className="text-sm text-muted-foreground line-clamp-3">
+                                            "{currentProfile.dating_bio || currentProfile.bio}"
                                         </p>
-                                    </div>
+                                    )}
 
-                                    <div className="space-y-4">
-                                        {currentProfile.dating_bio ? (
-                                            <p className="font-scribble text-base leading-relaxed text-muted-foreground italic">
-                                                "{currentProfile.dating_bio}"
-                                            </p>
-                                        ) : currentProfile.bio ? (
-                                            <p className="font-scribble text-base leading-relaxed text-muted-foreground italic">
-                                                "{currentProfile.bio}"
-                                            </p>
-                                        ) : (
-                                            <p className="font-scribble text-base text-muted-foreground">No bio yet ✏️</p>
-                                        )}
-
-                                        {currentProfile.interests && (
-                                            <div className="flex flex-wrap gap-2 pt-2">
-                                                {currentProfile.interests.slice(0, 4).map((tag, i) => (
-                                                    <Badge 
-                                                        key={i} 
-                                                        variant="secondary" 
-                                                        className="font-handwritingAlt text-sm border-2 border-dashed"
-                                                        style={{ transform: `rotate(${i % 2 === 0 ? '-1' : '1'}deg)` }}
-                                                    >
-                                                        {tag}
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="mt-6 grid grid-cols-2 gap-4">
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        onClick={() => handleAction('pass')}
-                                        className="border-2 border-dashed hover:border-solid hover:bg-destructive/5 hover:text-destructive hover:border-destructive/20 h-14 font-handwritingAlt text-lg"
-                                    >
-                                        <X className="h-6 w-6 mr-1" />
-                                        Pass
-                                    </Button>
-                                    <Button
-                                        size="lg"
-                                        onClick={() => handleAction('like')}
-                                        className="bg-accent text-accent-foreground hover:bg-accent/90 h-14 font-handwritingAlt text-lg"
-                                    >
-                                        <Heart className="h-6 w-6 mr-1" />
-                                        Like
-                                    </Button>
+                                    {currentProfile.interests && (
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {currentProfile.interests.slice(0, 4).map((tag, i) => (
+                                                <Badge key={i} variant="secondary" className="text-xs">
+                                                    {tag}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div 
-                            className="text-center p-12 border-2 border-dashed border-border rounded-2xl bg-card max-w-sm w-full mx-auto"
-                            style={{ transform: 'rotate(-1deg)' }}
-                        >
-                            <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-muted-foreground/20">
-                                <Search className="h-10 w-10 text-muted-foreground/40" />
+
+                            {/* Actions */}
+                            <div className="mt-4 grid grid-cols-2 gap-3">
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    onClick={() => handleAction('pass')}
+                                    className="h-12"
+                                >
+                                    <X className="h-5 w-5 mr-1" />
+                                    Pass
+                                </Button>
+                                <Button
+                                    size="lg"
+                                    onClick={() => handleAction('like')}
+                                    className="btn-accent h-12"
+                                >
+                                    <Heart className="h-5 w-5 mr-1" />
+                                    Like
+                                </Button>
                             </div>
-                            <h3 className="font-handwriting text-2xl mb-2">That's everyone!</h3>
-                            <p className="text-muted-foreground font-scribble text-base mb-6">Check back later for new students ✨</p>
-                            <Button variant="outline" onClick={() => initDiscover()} className="font-handwritingAlt border-2 border-dashed hover:border-solid">
-                                Refresh
-                            </Button>
                         </div>
-                    )}
-                </div>
+                    </div>
+                ) : (
+                    <div className="text-center p-8 card-elevated max-w-sm w-full mx-auto">
+                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Search className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2">No more profiles</h3>
+                        <p className="text-muted-foreground text-sm mb-4">Check back later for new students</p>
+                        <Button variant="outline" onClick={() => initDiscover()}>
+                            Refresh
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* Settings Dialog */}
             <Dialog open={showSettings} onOpenChange={setShowSettings}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
-                        <DialogTitle className="font-handwriting text-3xl">Preferences ⚙️</DialogTitle>
+                        <DialogTitle className="text-xl font-semibold">Preferences</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-6 py-4">
-                        <div className="flex items-center justify-between p-4 border-2 border-dashed rounded-xl bg-muted/10">
+                    <div className="space-y-5 py-4">
+                        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                             <div className="space-y-0.5">
-                                <Label className="font-handwritingAlt text-base">Enable Discovery</Label>
-                                <p className="text-xs text-muted-foreground font-scribble">Show me to others</p>
+                                <Label>Enable Discovery</Label>
+                                <p className="text-xs text-muted-foreground">Show my profile to others</p>
                             </div>
                             <Switch
                                 checked={settings.dating_enabled}
@@ -341,25 +316,25 @@ const Discover = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="font-handwritingAlt text-base">I'm looking for</Label>
+                            <Label>I'm looking for</Label>
                             <Select
                                 value={settings.dating_looking_for}
                                 onValueChange={(val) => setSettings({ ...settings, dating_looking_for: val })}
                             >
-                                <SelectTrigger className="border-2 border-dashed focus:border-solid font-scribble">
+                                <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="font-scribble">
-                                    <SelectItem value="friends">Friends 👋</SelectItem>
-                                    <SelectItem value="study">Study Partners 📚</SelectItem>
-                                    <SelectItem value="dating">Relationship 💕</SelectItem>
-                                    <SelectItem value="mentor">Mentorship 🎓</SelectItem>
+                                <SelectContent>
+                                    <SelectItem value="friends">Friends</SelectItem>
+                                    <SelectItem value="study">Study Partners</SelectItem>
+                                    <SelectItem value="dating">Relationship</SelectItem>
+                                    <SelectItem value="mentor">Mentorship</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        <Button className="w-full font-handwritingAlt text-lg h-12" onClick={updateSettings}>
-                            Save Changes ✓
+                        <Button className="w-full btn-accent" onClick={updateSettings}>
+                            Save Changes
                         </Button>
                     </div>
                 </DialogContent>
