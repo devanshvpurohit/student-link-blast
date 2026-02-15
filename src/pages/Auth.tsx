@@ -83,8 +83,8 @@ const Auth = () => {
       <div className="w-full max-w-md animate-scale-in z-10">
         <div className="glass-card rounded-3xl p-8 border border-white/10 shadow-2xl backdrop-blur-xl">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 shadow-lg shadow-primary/25 mb-4">
-              <Sparkles className="h-6 w-6 text-white" />
+            <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-white shadow-lg shadow-primary/25 mb-4 overflow-hidden">
+              <img src="/favicon.ico" alt="Bazinga Logo" className="h-12 w-12 object-contain" />
             </div>
             <h1 className="text-3xl font-bold mb-2 tracking-tight">
               {isResetPassword ? 'Reset Password' : isForgotPassword ? 'Recovery' : isSignUp ? 'Create Account' : 'Welcome Back'}

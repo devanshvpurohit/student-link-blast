@@ -19,7 +19,7 @@ const Layout = ({ children }: LayoutProps) => {
   const menuItems = [
     { icon: Users, label: 'Connect', path: '/connect' },
     { icon: Bell, label: 'Pulse', path: '/pulse' },
-    { icon: Zap, label: 'Study Rooms', path: '/study-rooms' },
+    { icon: Zap, label: 'Study Room', path: '/study-room' },
     { icon: Hash, label: 'AnonySpace', path: '/anonyspace' },
     { icon: Calendar, label: 'ClubVerse', path: '/clubverse' },
     { icon: MessageSquare, label: 'Messages', path: '/messages' },
@@ -42,8 +42,8 @@ const Layout = ({ children }: LayoutProps) => {
               className="mb-8 cursor-pointer transform transition-transform hover:scale-110"
               onClick={() => navigate('/')}
             >
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25">
-                <span className="text-white font-bold text-xl">B</span>
+              <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-primary/25 overflow-hidden">
+                <img src="/favicon.ico" alt="Bazinga Logo" className="h-8 w-8 object-contain" />
               </div>
             </div>
 
@@ -93,8 +93,8 @@ const Layout = ({ children }: LayoutProps) => {
           {/* Mobile Header */}
           <header className="lg:hidden fixed top-0 left-0 right-0 h-16 glass z-50 px-4 flex items-center justify-between">
             <div className="flex items-center gap-2" onClick={() => navigate('/')}>
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-lg">B</span>
+              <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center shadow-md overflow-hidden">
+                <img src="/favicon.ico" alt="Bazinga Logo" className="h-6 w-6 object-contain" />
               </div>
               <span className="font-bold text-lg text-foreground">Bazinga</span>
             </div>

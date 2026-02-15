@@ -34,7 +34,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/connect" element={<Connect />} />
               <Route path="/pulse" element={<Pulse />} />
-              <Route path="/study-rooms" element={<StudyRoom />} />
+              <Route path="/study-room" element={<StudyRoom />} />
               <Route path="/anonyspace" element={<AnonySpace />} />
               <Route path="/clubverse" element={<ClubVerse />} />
               <Route path="/messages" element={<Messages />} />

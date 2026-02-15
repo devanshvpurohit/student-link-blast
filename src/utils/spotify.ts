@@ -1,5 +1,5 @@
 export const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || '';
-export const REDIRECT_URI = window.location.origin + '/study-rooms';
+export const REDIRECT_URI = window.location.origin + '/study-room';
 export const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
 export const RESPONSE_TYPE = 'token';
 export const SCOPES = [
