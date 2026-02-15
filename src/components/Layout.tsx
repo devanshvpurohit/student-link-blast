@@ -5,6 +5,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import PWAInstall from './PWAInstall';
 
 interface LayoutProps {
   children: ReactNode;
@@ -75,6 +76,7 @@ const Layout = ({ children }: LayoutProps) => {
             </nav>
 
             <div className="w-full px-4 space-y-2 mt-auto">
+              <PWAInstall />
               <div className="pt-2 border-t border-white/10 w-full">
                 <Button
                   variant="ghost"
@@ -125,6 +127,8 @@ const Layout = ({ children }: LayoutProps) => {
                     {item.label}
                   </Button>
                 ))}
+                <div className="h-px bg-border my-4" />
+                <PWAInstall />
                 <div className="h-px bg-border my-4" />
                 <Button
                   variant="ghost"
