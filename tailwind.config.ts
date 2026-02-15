@@ -22,11 +22,11 @@ export default {
         xs: "475px",
       },
       fontFamily: {
-        sans: ["Times New Roman", "Times", "serif"],
-        serif: ["Times New Roman", "Times", "serif"],
-        handwriting: ["Times New Roman", "Times", "serif"],
-        handwritingAlt: ["Times New Roman", "Times", "serif"],
-        scribble: ["Times New Roman", "Times", "serif"],
+        sans: ["-apple-system", "BlinkMacSystemFont", "'SF Pro Display'", "'SF Pro Text'", "'Helvetica Neue'", "Helvetica", "Arial", "sans-serif"],
+        serif: ["'New York'", "Georgia", "'Times New Roman'", "serif"],
+        handwriting: ["-apple-system", "BlinkMacSystemFont", "'SF Pro Display'", "sans-serif"],
+        handwritingAlt: ["-apple-system", "BlinkMacSystemFont", "'SF Pro Display'", "sans-serif"],
+        scribble: ["-apple-system", "BlinkMacSystemFont", "'SF Pro Display'", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -102,10 +102,11 @@ export default {
         "2xs": ["0.625rem", { lineHeight: "0.875rem" }],
       },
       boxShadow: {
-        glow: "var(--shadow-glow)",
-        "glow-accent": "var(--shadow-glow-accent)",
-        "paper": "0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05)",
-        "paper-hover": "0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07)",
+        "apple-sm": "0 1px 3px hsl(0 0% 0% / 0.06), 0 1px 2px hsl(0 0% 0% / 0.04)",
+        "apple": "0 4px 14px -2px hsl(0 0% 0% / 0.08), 0 2px 6px -1px hsl(0 0% 0% / 0.04)",
+        "apple-lg": "0 12px 40px -8px hsl(0 0% 0% / 0.12), 0 4px 12px -2px hsl(0 0% 0% / 0.04)",
+        "paper": "0 1px 3px hsl(0 0% 0% / 0.06), 0 1px 2px hsl(0 0% 0% / 0.04)",
+        "paper-hover": "0 4px 14px -2px hsl(0 0% 0% / 0.08), 0 2px 6px -1px hsl(0 0% 0% / 0.04)",
       },
       keyframes: {
         "accordion-down": {

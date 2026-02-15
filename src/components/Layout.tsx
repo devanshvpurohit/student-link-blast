@@ -52,13 +52,13 @@ const Layout = ({ children }: LayoutProps) => {
           <div className="h-14 flex items-center justify-between px-4 border-b border-border">
             {!sidebarCollapsed && (
               <div
-                className="flex items-center gap-2.5 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer"
                 onClick={() => navigate('/')}
               >
-                <div className="w-8 h-8 rounded-md bg-accent text-accent-foreground flex items-center justify-center text-lg font-bold">
+                <div className="w-7 h-7 rounded-lg bg-accent text-accent-foreground flex items-center justify-center text-sm font-bold">
                   B
                 </div>
-                <span className="text-xl font-semibold tracking-tight">Bazinga</span>
+                <span className="text-lg font-semibold tracking-tight">Bazinga</span>
               </div>
             )}
             <Button
@@ -78,9 +78,9 @@ const Layout = ({ children }: LayoutProps) => {
                 onClick={() => navigate('/profile')}
                 className="w-full flex items-center gap-3 p-3 rounded-md hover:bg-muted transition-colors text-left group"
               >
-                <Avatar className="h-10 w-10 rounded-md border border-border">
+                <Avatar className="h-9 w-9 rounded-xl border border-border">
                   <AvatarImage src={user.user_metadata?.avatar_url} />
-                  <AvatarFallback className="rounded-md bg-accent/10 text-accent text-base font-medium">
+                  <AvatarFallback className="rounded-xl bg-accent/10 text-accent text-sm font-semibold">
                     {user.email?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -140,12 +140,12 @@ const Layout = ({ children }: LayoutProps) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
-        <header className="lg:hidden h-14 border-b border-border glass sticky top-0 z-50 flex items-center justify-between px-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-md bg-accent text-accent-foreground flex items-center justify-center text-lg font-bold">
+        <header className="lg:hidden h-12 border-b border-border glass sticky top-0 z-50 flex items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-accent text-accent-foreground flex items-center justify-center text-sm font-bold">
               B
             </div>
-            <span className="text-xl font-semibold tracking-tight">Bazinga</span>
+            <span className="text-lg font-semibold tracking-tight">Bazinga</span>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
