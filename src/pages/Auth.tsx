@@ -1,222 +1,262 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, Sparkles, Users, Loader2, Mail, Lock, ArrowRight } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/useAuth';
+import { Sparkles, ArrowRight, User, Mail, Lock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
+  const isResetMode = searchParams.get('reset') === 'true';
+
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isResetPassword, setIsResetPassword] = useState(isResetMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { user, signUp, signIn, resetPassword, updatePassword } = useAuth();
 
-  const handleAuth = async (isSignUp: boolean, e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    const { error } = isSignUp
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      if (isSignUp) toast({ title: "Check your email", description: "We sent you a confirmation link." });
-      else navigate('/');
+  useEffect(() => {
+    if (isResetMode) {
+      setIsResetPassword(true);
+      setIsForgotPassword(false);
+      setIsSignUp(false);
     }
-    setIsLoading(false);
+  }, [isResetMode]);
+
+  if (user && !isResetPassword) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (isForgotPassword) {
+        await resetPassword(email);
+        setIsForgotPassword(false);
+      } else if (isResetPassword) {
+        if (newPassword !== confirmPassword) {
+          // Toast error ideally here
+          setLoading(false);
+          return;
+        }
+        const result = await updatePassword(newPassword);
+        if (!result.error) {
+          setIsResetPassword(false);
+          window.history.replaceState({}, '', '/auth');
+        }
+      } else if (isSignUp) {
+        await signUp(email, password, fullName);
+      } else {
+        await signIn(email, password);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleMode = () => {
+    setIsSignUp(!isSignUp);
+    setIsForgotPassword(false);
+    setIsResetPassword(false);
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-      {/* Brand Side */}
-      <div className="bg-primary text-primary-foreground p-8 lg:p-12 flex flex-col justify-between relative overflow-hidden">
-        {/* Subtle pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)',
-            backgroundSize: '24px 24px'
-          }} />
-        </div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-16">
-            <div className="h-10 w-10 bg-accent text-accent-foreground rounded-md flex items-center justify-center font-bold text-xl">
-              B
-            </div>
-            <span className="text-2xl font-semibold tracking-tight">Bazinga</span>
-          </div>
-          
-          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-6 leading-tight">
-            Your Campus
-            <br />
-            <span className="text-accent">Social Network</span>
-          </h1>
-          
-          <p className="text-primary-foreground/80 text-lg max-w-md leading-relaxed">
-            Connect with classmates, find your match, and stay updated with everything happening on campus.
-          </p>
-          
-          {/* Feature highlights */}
-          <div className="mt-12 space-y-4">
-            {[
-              { icon: Heart, text: "Find your campus match" },
-              { icon: Users, text: "Connect with classmates" },
-              { icon: Sparkles, text: "Discover campus events" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-base">
-                <div className="p-2 rounded-md bg-accent/20">
-                  <item.icon className="h-4 w-4 text-accent" />
-                </div>
-                <span className="text-primary-foreground/90">{item.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="hidden lg:block text-sm text-primary-foreground/50 relative z-10">
-          © 2024 Bazinga — Made for students
-        </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-primary/20 blur-[150px] animate-float" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/20 blur-[150px] animate-float" style={{ animationDelay: '-4s' }} />
       </div>
 
-      {/* Form Side */}
-      <div className="flex items-center justify-center p-8 bg-background relative">
-        <div className="absolute top-4 right-4">
-          <ThemeToggle />
-        </div>
-        
-        <div className="w-full max-w-sm space-y-8 animate-in">
-          <div className="space-y-2 text-center lg:text-left">
-            <h2 className="text-3xl font-bold tracking-tight">Get started</h2>
+      <div className="w-full max-w-md animate-scale-in z-10">
+        <div className="glass-card rounded-3xl p-8 border border-white/10 shadow-2xl backdrop-blur-xl">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 shadow-lg shadow-primary/25 mb-4">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold mb-2 tracking-tight">
+              {isResetPassword ? 'Reset Password' : isForgotPassword ? 'Recovery' : isSignUp ? 'Create Account' : 'Welcome Back'}
+            </h1>
             <p className="text-muted-foreground">
-              Use your university email to continue
+              {isResetPassword
+                ? 'Enter your new password below'
+                : isForgotPassword
+                  ? 'We will send you a recovery link'
+                  : isSignUp
+                    ? 'Join the campus community today'
+                    : 'Enter your credentials to access your account'}
             </p>
           </div>
 
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Log In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="login">
-              <form onSubmit={(e) => handleAuth(false, e)} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {isResetPassword ? (
+              <>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@university.edu"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      required
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label>New Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="password"
                       type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
+                      className="pl-10 bg-black/20 border-white/10 focus:border-primary/50"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
                       required
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <Button type="submit" className="w-full btn-accent gap-2" disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      Log In
-                      <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form onSubmit={(e) => handleAuth(true, e)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="s-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="s-email"
-                      type="email"
-                      placeholder="you@university.edu"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      required
-                      className="pl-10"
+                      minLength={6}
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="s-password">Create Password</Label>
+                  <Label>Confirm Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="s-password"
                       type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
+                      className="pl-10 bg-black/20 border-white/10 focus:border-primary/50"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       required
-                      className="pl-10"
+                      minLength={6}
                     />
                   </div>
                 </div>
-                <Button type="submit" className="w-full btn-accent gap-2" disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                <Button type="submit" className="w-full h-11" disabled={loading}>
+                  {loading ? <span className="animate-spin mr-2">⏳</span> : 'Update Password'}
+                </Button>
+              </>
+            ) : isForgotPassword ? (
+              <>
+                <div className="space-y-2">
+                  <Label>Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      className="pl-10 bg-black/20 border-white/10 focus:border-primary/50"
+                      placeholder="student@university.edu"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full h-11" disabled={loading}>
+                  {loading ? <span className="animate-spin mr-2">⏳</span> : 'Send Reset Link'}
+                </Button>
+                <Button type="button" variant="ghost" className="w-full" onClick={() => setIsForgotPassword(false)}>
+                  Back to Sign In
+                </Button>
+              </>
+            ) : (
+              <>
+                {isSignUp && (
+                  <div className="space-y-2 animate-fade-in">
+                    <Label>Full Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        className="pl-10 bg-black/20 border-white/10 focus:border-primary/50"
+                        placeholder="John Doe"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label>Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      className="pl-10 bg-black/20 border-white/10 focus:border-primary/50"
+                      placeholder="student@university.edu"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>Password</Label>
+                    {!isSignUp && (
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="p-0 h-auto text-xs text-muted-foreground hover:text-primary"
+                        onClick={() => {
+                          setIsForgotPassword(true);
+                          setIsSignUp(false);
+                        }}
+                      >
+                        Forgot password?
+                      </Button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="password"
+                      className="pl-10 bg-black/20 border-white/10 focus:border-primary/50"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow" disabled={loading}>
+                  {loading ? (
+                    <span className="animate-spin mr-2">⏳</span>
                   ) : (
-                    <>
-                      Create Account
+                    <span className="flex items-center gap-2">
+                      {isSignUp ? 'Create Account' : 'Sign In'}
                       <ArrowRight className="h-4 w-4" />
-                    </>
+                    </span>
                   )}
                 </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+              </>
+            )}
+          </form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
+          {!isResetPassword && !isForgotPassword && (
+            <div className="mt-6 text-center animate-fade-in">
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or</span>
+                </div>
+              </div>
+
+              <p className="text-muted-foreground text-sm">
+                {isSignUp ? "Already have an account?" : "Don't have an account?"}
+                <button
+                  type="button"
+                  className="ml-1 text-primary hover:underline font-medium focus:outline-none"
+                  onClick={toggleMode}
+                >
+                  {isSignUp ? 'Sign in' : 'Sign up'}
+                </button>
+              </p>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">or continue with</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="w-full">
-              Google
-            </Button>
-            <Button variant="outline" className="w-full">
-              GitHub
-            </Button>
-          </div>
-
-          <p className="text-center text-xs text-muted-foreground">
-            By continuing, you agree to our Terms of Service
-          </p>
+          )}
         </div>
       </div>
     </div>
