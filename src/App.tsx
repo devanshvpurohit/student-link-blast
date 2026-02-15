@@ -13,6 +13,7 @@ import AnonySpace from "./pages/AnonySpace";
 import ClubVerse from "./pages/ClubVerse";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
+import StudyRoom from "./pages/StudyRoom";
 import Alumni from "./pages/Alumni";
 import Discover from "./pages/Discover";
 import Events from "./pages/Events";
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/connect" element={<Connect />} />
               <Route path="/pulse" element={<Pulse />} />
+              <Route path="/study-rooms" element={<StudyRoom />} />
               <Route path="/anonyspace" element={<AnonySpace />} />
               <Route path="/clubverse" element={<ClubVerse />} />
               <Route path="/messages" element={<Messages />} />

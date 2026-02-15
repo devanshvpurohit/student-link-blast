@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { Users, MessageSquare, Bell, Hash, Calendar, User, Menu, X, LogOut } from 'lucide-react';
+import { Users, MessageSquare, Bell, Hash, Calendar, User, Menu, X, LogOut, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,6 +19,7 @@ const Layout = ({ children }: LayoutProps) => {
   const menuItems = [
     { icon: Users, label: 'Connect', path: '/connect' },
     { icon: Bell, label: 'Pulse', path: '/pulse' },
+    { icon: Zap, label: 'Study Rooms', path: '/study-rooms' },
     { icon: Hash, label: 'AnonySpace', path: '/anonyspace' },
     { icon: Calendar, label: 'ClubVerse', path: '/clubverse' },
     { icon: MessageSquare, label: 'Messages', path: '/messages' },
