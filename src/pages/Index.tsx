@@ -12,10 +12,10 @@ const Index = () => {
   const navigate = useNavigate();
 
   const quickLinks = [
-    { icon: Sparkles, label: "Discover", desc: "Find your match", path: "/discover", color: "text-accent" },
-    { icon: Users, label: "Connect", desc: "Campus friends", path: "/connect", color: "text-foreground" },
-    { icon: Calendar, label: "Events", desc: "What's happening", path: "/events", color: "text-foreground" },
-    { icon: Bell, label: "Pulse", desc: "Stay updated", path: "/pulse", color: "text-foreground" },
+    { icon: Sparkles, label: "Discover", desc: "Find your match", path: "/discover" },
+    { icon: Users, label: "Connect", desc: "Campus friends", path: "/connect" },
+    { icon: Calendar, label: "Events", desc: "What's happening", path: "/events" },
+    { icon: Bell, label: "Pulse", desc: "Stay updated", path: "/pulse" },
   ];
 
   const contentBlocks = [
@@ -38,10 +38,10 @@ const Index = () => {
   if (loading) return (
     <div className="h-screen flex items-center justify-center">
       <div className="text-center text-muted-foreground">
-        <div className="w-8 h-8 rounded-md bg-accent text-accent-foreground flex items-center justify-center text-lg font-bold mx-auto mb-4 animate-pulse">
+        <div className="w-8 h-8 rounded-xl bg-accent text-accent-foreground flex items-center justify-center text-sm font-bold mx-auto mb-4 animate-pulse">
           B
         </div>
-        <span>Loading...</span>
+        <span className="text-sm">Loading...</span>
       </div>
     </div>
   );
@@ -49,49 +49,42 @@ const Index = () => {
   if (!user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="container-wide py-6 sm:py-10 space-y-8 animate-in">
+    <div className="container-wide py-8 sm:py-12 space-y-10 animate-in">
 
-      {/* Header / Greeting */}
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Welcome back</p>
-        <h1 className="text-3xl sm:text-4xl tracking-tight">
-          Hello, {user.user_metadata?.full_name?.split(' ')[0] || 'there'}
+      {/* Greeting */}
+      <div className="space-y-1">
+        <h1 className="text-3xl sm:text-4xl">
+          Hello, {user.user_metadata?.full_name?.split(' ')[0] || 'there'}.
         </h1>
         <p className="text-muted-foreground text-lg">
-          Here's what's happening on campus today
+          Here's what's happening on campus.
         </p>
       </div>
 
-      {/* Quick Access Grid */}
+      {/* Quick Access */}
       <div className="feature-grid">
         {quickLinks.map((link, i) => (
           <button
             key={i}
             onClick={() => navigate(link.path)}
-            className="card-interactive flex flex-col items-start gap-3 p-4 text-left"
+            className="card-interactive flex flex-col items-start gap-4 p-5 text-left group"
           >
-            <div className={cn(
-              "p-2 rounded-md bg-muted transition-colors",
-              "group-hover:bg-accent group-hover:text-accent-foreground"
-            )}>
-              <link.icon className={cn("h-5 w-5", link.color)} />
+            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent group-hover:text-accent-foreground transition-colors duration-300">
+              <link.icon className="h-5 w-5 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
             </div>
             <div>
-              <span className="font-medium block">{link.label}</span>
+              <span className="font-semibold block text-[15px]">{link.label}</span>
               <span className="text-xs text-muted-foreground">{link.desc}</span>
             </div>
           </button>
         ))}
       </div>
 
-      {/* Divider */}
-      <div className="divider" />
-
       {/* Content Sections */}
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-10">
         {contentBlocks.map((block, i) => (
           <div key={i} className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {block.title}
             </h3>
             <div className="space-y-2">
@@ -101,14 +94,14 @@ const Index = () => {
                   onClick={() => navigate(item.path)}
                   className="card-interactive flex items-center gap-4 p-4"
                 >
-                  <div className="p-2.5 bg-muted rounded-md text-foreground transition-colors">
-                    <item.icon className="h-5 w-5" />
+                  <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center">
+                    <item.icon className="h-5 w-5 text-foreground" />
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium">{item.title}</h4>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-[15px]">{item.title}</h4>
                     <p className="text-sm text-muted-foreground">{item.desc}</p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                 </div>
               ))}
             </div>
@@ -116,20 +109,21 @@ const Index = () => {
         ))}
       </div>
 
-      {/* CTA Card */}
-      <div className="card-elevated p-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-accent/5 border-accent/20">
+      {/* CTA */}
+      <div className="card-elevated p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="space-y-1 text-center sm:text-left">
           <div className="flex items-center gap-2 justify-center sm:justify-start">
             <Heart className="h-5 w-5 text-accent" />
-            <h3 className="text-xl font-semibold">Complete your profile</h3>
+            <h3 className="text-lg font-semibold">Complete your profile</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            Add your interests to get better matches & connections
+            Add your interests to get better matches & connections.
           </p>
         </div>
         <Button 
           onClick={() => navigate('/profile')} 
-          className="btn-accent gap-2"
+          variant="accent"
+          className="gap-2"
         >
           Edit Profile
           <ArrowRight className="h-4 w-4" />
