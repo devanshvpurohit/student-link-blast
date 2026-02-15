@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,17 +21,35 @@ import Events from "./pages/Events";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import { useAuth } from "./hooks/useAuth";
+import { getRandomQuote } from "./utils/quotes";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, hasProfile } = useAuth();
   const location = useLocation();
+  const [quote] = useState(() => getRandomQuote());
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-background p-6 text-center space-y-8 animate-fade-in">
+        <div className="relative">
+          <div className="h-24 w-24 rounded-3xl bg-white flex items-center justify-center shadow-2xl overflow-hidden animate-pulse">
+            <img src="/favicon.ico" alt="Bazinga" className="h-16 w-16 object-contain" />
+          </div>
+          <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-primary animate-ping" />
+        </div>
+
+        <div className="max-w-md space-y-4">
+          <p className="text-2xl font-handwriting tracking-tight text-foreground leading-tight italic">
+            "{quote}"
+          </p>
+          <div className="flex items-center justify-center gap-2 text-muted-foreground font-scribble">
+            <div className="h-px w-8 bg-muted-foreground/30" />
+            <span>Vibing...</span>
+            <div className="h-px w-8 bg-muted-foreground/30" />
+          </div>
+        </div>
       </div>
     );
   }

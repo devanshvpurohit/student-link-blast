@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import * as pdfjsLib from 'pdfjs-dist';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { getRandomQuote } from '@/utils/quotes';
 
 // Initialize PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -80,6 +81,17 @@ const ScholarAI = () => {
     const [isCardFlipped, setIsCardFlipped] = useState(false);
     const [quizScores, setQuizScores] = useState<Record<number, number>>({});
     const [quizSubmitted, setQuizSubmitted] = useState(false);
+    const [loadingQuote, setLoadingQuote] = useState('');
+
+    useEffect(() => {
+        if (isLoading) {
+            setLoadingQuote(getRandomQuote());
+            const interval = setInterval(() => {
+                setLoadingQuote(getRandomQuote());
+            }, 6000);
+            return () => clearInterval(interval);
+        }
+    }, [isLoading]);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -360,12 +372,19 @@ const ScholarAI = () => {
                                 </div>
                             ))}
                             {isLoading && (
-                                <div className="flex gap-3 justify-start">
-                                    <Avatar className="h-8 w-8 border border-pop/20">
-                                        <AvatarFallback className="bg-pop/10 text-pop"><Bot className="h-4 w-4" /></AvatarFallback>
-                                    </Avatar>
-                                    <div className="bg-white/5 rounded-2xl rounded-bl-none px-4 py-2 flex items-center">
-                                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                <div className="flex flex-col gap-3 justify-start animate-fade-in">
+                                    <div className="flex gap-3">
+                                        <Avatar className="h-8 w-8 border border-pop/20">
+                                            <AvatarFallback className="bg-pop/10 text-pop"><Bot className="h-4 w-4" /></AvatarFallback>
+                                        </Avatar>
+                                        <div className="bg-white/5 rounded-2xl rounded-bl-none px-4 py-2 flex items-center">
+                                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                        </div>
+                                    </div>
+                                    <div className="pl-11 pr-4">
+                                        <p className="text-[11px] text-muted-foreground italic leading-tight animate-pulse">
+                                            "{loadingQuote}"
+                                        </p>
                                     </div>
                                 </div>
                             )}

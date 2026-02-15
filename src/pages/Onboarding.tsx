@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Sparkles, ArrowRight, User, BookOpen, GraduationCap } from 'lucide-react';
+import { getRandomQuote } from '@/utils/quotes';
 
 const Onboarding = () => {
     const { user } = useAuth();
@@ -17,6 +18,7 @@ const Onboarding = () => {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState(1);
+    const [quote] = useState(() => getRandomQuote('punchy'));
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -190,6 +192,11 @@ const Onboarding = () => {
                                 >
                                     {loading ? "Saving..." : "Start Exploring! 🚀"}
                                 </Button>
+                                {loading && (
+                                    <p className="text-[10px] text-center text-muted-foreground italic animate-pulse">
+                                        "{quote}"
+                                    </p>
+                                )}
                             </div>
                         </div>
                     )}
