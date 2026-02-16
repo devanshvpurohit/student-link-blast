@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import PWAInstall from './PWAInstall';
+import { getRandomQuote } from '@/utils/quotes';
 
 interface LayoutProps {
   children: ReactNode;
@@ -75,9 +76,9 @@ const Layout = ({ children }: LayoutProps) => {
               })}
             </nav>
 
-            <div className="w-full px-4 space-y-2 mt-auto">
+            <div className="w-full px-4 space-y-4 mt-auto">
               <PWAInstall />
-              <div className="pt-2 border-t border-white/10 w-full">
+              <div className="pt-2 border-t border-white/10 w-full space-y-4">
                 <Button
                   variant="ghost"
                   className="w-full justify-start h-12 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
@@ -88,6 +89,13 @@ const Layout = ({ children }: LayoutProps) => {
                     Sign Out
                   </span>
                 </Button>
+
+                {/* Subtle Sidebar Quote */}
+                <div className="px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden">
+                  <p className="text-[10px] text-muted-foreground/40 italic leading-tight text-center">
+                    "{getRandomQuote('punchy')}"
+                  </p>
+                </div>
               </div>
             </div>
           </aside>

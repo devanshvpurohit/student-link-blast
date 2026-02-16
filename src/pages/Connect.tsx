@@ -12,6 +12,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { getRandomQuote } from '@/utils/quotes';
 import { Database } from '@/integrations/supabase/types';
 
 // Use strict types from our generated definition
@@ -220,8 +221,16 @@ const Connect = () => {
             {isLoading ? (
               <p className="col-span-full text-center py-12 text-muted-foreground animate-pulse">Loading profiles...</p>
             ) : filteredProfiles.length === 0 ? (
-              <div className="col-span-full text-center py-12 border border-dashed rounded-lg">
-                <p className="text-muted-foreground">No students found.</p>
+              <div className="col-span-full text-center py-16 border border-dashed rounded-3xl bg-white/5 border-white/10 space-y-6">
+                <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                  <Search className="h-8 w-8 text-primary" />
+                </div>
+                <div className="max-w-xs mx-auto space-y-2 px-4">
+                  <p className="text-muted-foreground text-sm font-medium">No students found.</p>
+                  <div className="pt-4 border-t border-white/5 italic text-base font-handwriting tracking-tight text-foreground/80">
+                    "{getRandomQuote('motivational')}"
+                  </div>
+                </div>
               </div>
             ) : (
               filteredProfiles.map(profile => (
@@ -277,7 +286,12 @@ const Connect = () => {
               </div>
             ))}
             {pendingRequests.length === 0 && (
-              <p className="text-sm text-muted-foreground py-4">No pending requests.</p>
+              <div className="text-center py-12 border border-dashed rounded-3xl bg-white/5 border-white/10 space-y-4">
+                <p className="text-sm text-muted-foreground">No pending requests.</p>
+                <p className="text-xs italic font-handwriting text-muted-foreground/60 px-8">
+                  "{getRandomQuote('punchy')}"
+                </p>
+              </div>
             )}
           </div>
 

@@ -3,6 +3,8 @@ import { Users, MessageSquare, Bell, Hash, Calendar, ArrowRight, Sparkles, Chevr
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { getRandomQuote } from '@/utils/quotes';
+import { useState } from 'react';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -24,6 +26,8 @@ const Index = () => {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
+
+  const vibeQuote = getRandomQuote('motivational');
 
   const features = [
     {
@@ -77,9 +81,22 @@ const Index = () => {
     <div className="pb-20">
       {/* Hero Section */}
       <section className="relative py-12 sm:py-20 px-4 text-center">
-        <div className="animate-bounce-slight inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pop/10 border border-pop/20 text-pop text-sm font-medium mb-6 backdrop-blur-sm">
+        <div className="animate-bounce-slight inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pop/10 border border-pop/20 text-pop text-sm font-medium mb-4 backdrop-blur-sm">
           <Sparkles className="h-4 w-4" />
           <span>Welcome to the future of campus social</span>
+        </div>
+
+        {/* Vibe of the Day Banner */}
+        <div className="max-w-xl mx-auto mb-8 animate-fade-in">
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-pop via-purple-500 to-glow rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+            <div className="relative px-6 py-4 bg-background leading-none rounded-2xl flex flex-col items-center gap-3 border border-white/5">
+              <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">Vibe of the Day</span>
+              <p className="text-lg font-handwriting italic text-foreground text-center line-clamp-2 leading-tight">
+                "{vibeQuote}"
+              </p>
+            </div>
+          </div>
         </div>
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-6 tracking-tight animate-slide-in-right" style={{ animationDelay: '0.1s' }}>

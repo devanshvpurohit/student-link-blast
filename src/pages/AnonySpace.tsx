@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { getRandomQuote } from '@/utils/quotes';
 
 interface AnonPost {
   id: string;
@@ -59,12 +60,12 @@ const AnonySpace = () => {
         .eq('user_id', user.id);
 
       const votesMap = new Map(votesData?.map(v => [v.post_id, v.vote_type]) || []);
-      
+
       const postsWithVotes = postsData.map(post => ({
         ...post,
         user_vote: (votesMap.get(post.id) as 'up' | 'down') || null,
       }));
-      
+
       setPosts(postsWithVotes);
     } else {
       setPosts(postsData || []);
@@ -224,7 +225,7 @@ const AnonySpace = () => {
           <h1 className="text-3xl font-bold">AnonySpace</h1>
           <p className="text-muted-foreground">Share thoughts anonymously</p>
         </div>
-        
+
         {user && (
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
@@ -246,11 +247,11 @@ const AnonySpace = () => {
                     rows={4}
                   />
                 </div>
-                
+
                 <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
                   <p>🔒 Your identity will remain completely anonymous. No one can trace this post back to you.</p>
                 </div>
-                
+
                 <Button onClick={createPost} className="w-full" disabled={loading}>
                   {loading ? 'Posting...' : 'Post Anonymously'}
                 </Button>
@@ -263,7 +264,7 @@ const AnonySpace = () => {
       <div className="space-y-4">
         {posts.map((post) => {
           const netScore = getNetScore(post.upvotes, post.downvotes);
-          
+
           return (
             <Card key={post.id}>
               <CardContent className="p-6">
@@ -278,7 +279,7 @@ const AnonySpace = () => {
                     >
                       <ArrowUp className="h-4 w-4" />
                     </Button>
-                    
+
                     <div className="text-center">
                       <div className={`font-bold ${netScore > 0 ? 'text-green-600' : netScore < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
                         {netScore > 0 ? '+' : ''}{netScore}
@@ -287,7 +288,7 @@ const AnonySpace = () => {
                         {post.upvotes}↑ {post.downvotes}↓
                       </div>
                     </div>
-                    
+
                     <Button
                       variant={post.user_vote === 'down' ? 'default' : 'outline'}
                       size="sm"
@@ -307,7 +308,7 @@ const AnonySpace = () => {
                           {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                         </span>
                       </div>
-                      
+
                       {user && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -330,7 +331,7 @@ const AnonySpace = () => {
                         </DropdownMenu>
                       )}
                     </div>
-                    
+
                     <p className="text-foreground whitespace-pre-wrap leading-relaxed">
                       {post.content}
                     </p>
@@ -340,12 +341,19 @@ const AnonySpace = () => {
             </Card>
           );
         })}
-        
+
         {posts.length === 0 && (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No anonymous posts yet. Be the first to share!</p>
+          <Card className="border-dashed bg-white/5 border-white/10">
+            <CardContent className="p-8 text-center space-y-6">
+              <div className="bg-pop/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                <MessageCircle className="h-8 w-8 text-pop" />
+              </div>
+              <div className="max-w-sm mx-auto space-y-2">
+                <p className="text-muted-foreground text-sm font-medium">No anonymous posts yet.</p>
+                <div className="pt-4 border-t border-white/5 italic text-lg font-handwriting tracking-tight">
+                  "{getRandomQuote('thought-provoking')}"
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -374,21 +382,21 @@ const AnonySpace = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
               <p>🔒 Reports are reviewed by our moderation team. False reports may result in account restrictions.</p>
             </div>
-            
+
             <div className="flex gap-2">
-              <Button 
-                onClick={reportPost} 
+              <Button
+                onClick={reportPost}
                 disabled={!reportReason}
                 variant="destructive"
                 className="flex-1"
               >
                 Report Post
               </Button>
-              <Button 
+              <Button
                 onClick={() => setReportDialogOpen(false)}
                 variant="outline"
                 className="flex-1"

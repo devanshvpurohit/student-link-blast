@@ -66,7 +66,7 @@ const ScholarAI = () => {
     const [showSettings, setShowSettings] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([
-        { role: 'model', text: 'Hello! I am your Scholar AI assistant. Upload a document to generate a full study guide or just chat to get started.' }
+        { role: 'model', text: `Hello! I am your Scholar AI assistant. "${getRandomQuote('thought-provoking')}"\n\nUpload a document to generate a full study guide or just chat to get started.` }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('chat');
