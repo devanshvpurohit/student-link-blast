@@ -1,630 +1,176 @@
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Users, Crown, User, Lock, Globe, MessageCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import ClubChat from '@/components/ClubChat';
-import ClubDashboard from '@/components/ClubDashboard';
+import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  GraduationCap, Users, Calendar, Search,
+  ArrowRight, Plus, ExternalLink
+} from "lucide-react";
+import { toast } from "sonner";
 
-interface Club {
-  id: string;
-  name: string;
-  description?: string;
-  category?: string;
-  avatar_url?: string;
-  created_by: string;
-  created_at: string;
-  visibility: 'public' | 'private';
-  member_count?: number;
-  user_membership?: {
-    status: string;
-    role: string;
-  };
-}
-
-interface ClubMember {
-  id: string;
-  role: string;
-  status: string;
-  joined_at: string;
-  profiles: {
-    full_name: string;
-    avatar_url?: string;
-  };
-}
+type Club = Database['public']['Tables']['clubs']['Row'];
 
 const ClubVerse = () => {
+  const { user } = useAuth();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [myClubs, setMyClubs] = useState<Club[]>([]);
-  const [selectedClub, setSelectedClub] = useState<Club | null>(null);
-  const [clubMembers, setClubMembers] = useState<ClubMember[]>([]);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
-  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
-  const [showChat, setShowChat] = useState(false);
-  const [selectedChatClub, setSelectedChatClub] = useState<Club | null>(null);
-  const [showDashboard, setShowDashboard] = useState(false);
-  const [selectedDashboardClub, setSelectedDashboardClub] = useState<Club | null>(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    if (user) {
-      fetchClubs();
-      fetchMyClubs();
-    }
+    fetchClubs();
+    if (user) fetchMyClubs();
   }, [user]);
 
   const fetchClubs = async () => {
-    // First get all clubs
-    const { data: clubsData, error: clubsError } = await supabase
+    setLoading(true);
+    const { data, error } = await supabase
       .from('clubs')
       .select('*')
-      .order('created_at', { ascending: false });
+      .eq('visibility', 'public')
+      .order('name');
 
-    if (clubsError) {
-      console.error('Error fetching clubs:', clubsError);
-      return;
-    }
-
-    // Get member counts for each club
-    const { data: memberCounts, error: memberError } = await supabase
-      .from('club_members')
-      .select('club_id')
-      .eq('status', 'approved');
-
-    if (memberError) {
-      console.error('Error fetching member counts:', memberError);
-      return;
-    }
-
-    // Get current user's memberships
-    const { data: userMemberships, error: membershipError } = await supabase
-      .from('club_members')
-      .select('club_id, status, role')
-      .eq('user_id', user?.id);
-
-    if (membershipError) {
-      console.error('Error fetching user memberships:', membershipError);
-      return;
-    }
-
-    // Create member count map
-    const memberCountMap = new Map();
-    memberCounts?.forEach(member => {
-      const count = memberCountMap.get(member.club_id) || 0;
-      memberCountMap.set(member.club_id, count + 1);
-    });
-
-    // Create user membership map
-    const membershipMap = new Map(userMemberships?.map(m => [m.club_id, m]) || []);
-    
-    // Process clubs with member count and user membership status
-    const processedClubs = clubsData?.map(club => ({
-      ...club,
-      visibility: club.visibility as 'public' | 'private',
-      member_count: memberCountMap.get(club.id) || 0,
-      user_membership: membershipMap.get(club.id),
-    })) || [];
-    
-    setClubs(processedClubs);
+    if (error) console.error(error);
+    else setClubs(data || []);
+    setLoading(false);
   };
 
   const fetchMyClubs = async () => {
-    try {
-      // Get user's club memberships first
-      const { data: memberships } = await supabase
-        .from('club_members')
-        .select('club_id')
-        .eq('user_id', user?.id)
-        .eq('status', 'approved');
-
-      const memberClubIds = memberships?.map(m => m.club_id) || [];
-
-      // Get clubs where user is either creator or approved member
-      let query = supabase
-        .from('clubs')
-        .select('*');
-
-      if (memberClubIds.length > 0) {
-        query = query.or(`created_by.eq.${user?.id},id.in.(${memberClubIds.join(',')})`);
-      } else {
-        query = query.eq('created_by', user?.id || '');
-      }
-
-      const { data: clubsData, error: clubsError } = await query;
-
-      if (clubsError) {
-        console.error('Error fetching my clubs:', clubsError);
-      } else {
-        const processedMyClubs = clubsData?.map(club => ({
-          ...club,
-          visibility: club.visibility as 'public' | 'private',
-        })) || [];
-        setMyClubs(processedMyClubs);
-      }
-    } catch (error) {
-      console.error('Error in fetchMyClubs:', error);
-    }
-  };
-
-  const fetchClubMembers = async (clubId: string) => {
-    const { data, error } = await supabase
+    if (!user) return;
+    const { data } = await supabase
       .from('club_members')
-      .select(`
-        *,
-        profiles(full_name, avatar_url)
-      `)
-      .eq('club_id', clubId)
-      .eq('status', 'approved')
-      .order('joined_at', { ascending: false });
+      .select('club_id, clubs(*)')
+      .eq('user_id', user.id);
 
-    if (error) {
-      console.error('Error fetching club members:', error);
-    } else {
-      setClubMembers(data || []);
-    }
-  };
-
-  const createClub = async () => {
-    if (!name.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a club name",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if club name already exists
-    const { data: existingClub } = await supabase
-      .from('clubs')
-      .select('id')
-      .eq('name', name.trim())
-      .single();
-
-    if (existingClub) {
-      toast({
-        title: "Error",
-        description: "A club with this name already exists",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from('clubs')
-      .insert({
-        name: name.trim(),
-        description: description.trim() || null,
-        category: category.trim() || null,
-        visibility: visibility,
-        created_by: user?.id,
-      });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create club",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Club created successfully!",
-      });
-      setName('');
-      setDescription('');
-      setCategory('');
-      setVisibility('public');
-      setIsCreateOpen(false);
-      fetchClubs();
-      fetchMyClubs();
+    if (data) {
+      // Extract clubs from the join
+      const joinedClubs = data.map((d: any) => d.clubs).filter(Boolean);
+      setMyClubs(joinedClubs);
     }
   };
 
   const joinClub = async (clubId: string) => {
-    const { error } = await supabase
-      .from('club_members')
-      .insert({
-        club_id: clubId,
-        user_id: user?.id,
-        status: 'pending',
-      });
+    if (!user) return;
+    const { error } = await supabase.from('club_members').insert({
+      club_id: clubId,
+      user_id: user.id,
+      status: 'pending',
+      role: 'member'
+    });
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to request club membership",
-        variant: "destructive",
-      });
+      if (error.code === '23505') toast.error("Already a member or pending");
+      else toast.error("Failed to join");
     } else {
-      toast({
-        title: "Success",
-        description: "Membership request sent!",
-      });
-      fetchClubs();
+      toast.success("Request sent to join!");
     }
   };
 
-  const openClubDetail = (club: Club) => {
-    setSelectedClub(club);
-    fetchClubMembers(club.id);
-    setIsDetailOpen(true);
-  };
-
-  const openChat = (club: Club) => {
-    setSelectedChatClub(club);
-    setShowChat(true);
-  };
-
-  const openDashboard = (club: Club) => {
-    setSelectedDashboardClub(club);
-    setShowDashboard(true);
-  };
-
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'admin': return <Crown className="h-4 w-4 text-yellow-500" />;
-      case 'moderator': return <User className="h-4 w-4 text-blue-500" />;
-      default: return <Users className="h-4 w-4 text-gray-500" />;
-    }
-  };
+  const filteredClubs = clubs.filter(c =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+    <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-8">
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Campus Clubs</h1>
-          <p className="text-sm text-muted-foreground mt-1">Join and discover student organizations</p>
+          <h1 className="text-2xl font-semibold tracking-tight">ClubVerse</h1>
+          <p className="text-muted-foreground text-sm">Discover and join student organizations.</p>
         </div>
-        
-        {user && (
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 w-full sm:w-auto">
-                <Plus className="h-4 w-4" />
-                <span className="hidden xs:inline">Start a Club</span>
-                <span className="xs:hidden">Create</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="mx-4 max-w-md">
-              <DialogHeader>
-                <DialogTitle>Start a New Student Club</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Input
-                    placeholder="Club name (e.g. Debate Society, Photography Club)"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-                
-                <div>
-                  <Input
-                    placeholder="Category (e.g. Academic, Sports, Arts)"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  />
-                </div>
-                
-                <div>
-                  <Textarea
-                    placeholder="Describe your club's mission and activities..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-                
-                <div>
-                  <Select value={visibility} onValueChange={(value: 'public' | 'private') => setVisibility(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Club visibility" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">
-                        <div className="flex items-center gap-2">
-                          <Globe className="h-4 w-4" />
-                          Open - All students can join
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="private">
-                        <div className="flex items-center gap-2">
-                          <Lock className="h-4 w-4" />
-                          Closed - Application required
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button onClick={createClub} className="w-full">
-                  Launch Club
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+        <Button className="gap-2">
+          <Plus className="h-4 w-4" />
+          Start a Club
+        </Button>
       </div>
 
-      <Tabs defaultValue="discover" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="discover" className="text-xs sm:text-sm">
-            <span className="hidden sm:inline">Explore Clubs</span>
-            <span className="sm:hidden">Explore</span>
-          </TabsTrigger>
-          <TabsTrigger value="my-clubs" className="text-xs sm:text-sm">
-            <span className="hidden sm:inline">My Organizations ({myClubs.length})</span>
-            <span className="sm:hidden">Mine ({myClubs.length})</span>
-          </TabsTrigger>
+      <Tabs defaultValue="all" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="all">All Clubs</TabsTrigger>
+          <TabsTrigger value="my">My Memberships</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="discover" className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {clubs.map((club) => (
-              <Card key={club.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <Avatar>
-                      <AvatarImage src={club.avatar_url} />
-                      <AvatarFallback>
-                        {club.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{club.name}</h3>
-                        {club.visibility === 'private' ? (
-                          <Lock className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Globe className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </div>
-                      {club.category && (
-                        <Badge variant="secondary" className="text-xs">
-                          {club.category}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {club.description && (
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {club.description}
-                    </p>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      {club.member_count || 0} {club.member_count === 1 ? 'student' : 'students'}
-                    </div>
-                    
-                    <div className="flex flex-col xs:flex-row gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => openClubDetail(club)}
-                        className="flex-1"
-                      >
-                        View
-                      </Button>
-                      
-                      {club.user_membership?.status === 'approved' && (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => openChat(club)}
-                          className="gap-1 flex-1"
-                        >
-                          <MessageCircle className="h-4 w-4" />
-                          <span className="hidden xs:inline">Chat</span>
-                        </Button>
-                      )}
-                      
-                      {!club.user_membership && (
-                        <Button 
-                          size="sm"
-                          onClick={() => joinClub(club.id)}
-                          className="flex-1"
-                        >
-                          Join
-                        </Button>
-                      )}
-                      
-                      {club.user_membership?.status === 'pending' && (
-                        <Button size="sm" variant="secondary" disabled>
-                          Pending
-                        </Button>
-                      )}
-                      
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+        <TabsContent value="all" className="space-y-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Find a club..."
+              className="pl-9"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
           </div>
-          
-          {clubs.length === 0 && (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                <p className="text-muted-foreground">No student clubs yet. Be the first to start one!</p>
-              </CardContent>
-            </Card>
-          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {loading ? (
+              [1, 2, 3].map(i => <div key={i} className="h-40 bg-muted animate-pulse rounded-xl" />)
+            ) : filteredClubs.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-muted-foreground border border-dashed rounded-lg">
+                No clubs found matching "{searchTerm}"
+              </div>
+            ) : (
+              filteredClubs.map(club => (
+                <Card key={club.id} className="flex flex-col hover:border-primary/50 transition-colors">
+                  <CardHeader className="flex-row gap-4 items-start space-y-0 pb-2">
+                    <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                      {club.avatar_url ? (
+                        <img src={club.avatar_url} className="w-full h-full object-cover rounded-lg" />
+                      ) : (
+                        <GraduationCap className="h-6 w-6 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div>
+                      <Badge variant="outline" className="mb-1 font-normal text-[10px]">{club.category || 'General'}</Badge>
+                      <CardTitle className="text-base">{club.name}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                      {club.description || 'No description provided.'}
+                    </p>
+                    <Button size="sm" variant="secondary" className="w-full" onClick={() => joinClub(club.id)}>
+                      Join Club
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </TabsContent>
 
-        <TabsContent value="my-clubs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {myClubs.map((club) => (
-              <Card key={club.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <Avatar>
-                      <AvatarImage src={club.avatar_url} />
-                      <AvatarFallback>
-                        {club.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{club.name}</h3>
-                        {club.visibility === 'private' ? (
-                          <Lock className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Globe className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </div>
-                      {club.category && (
-                        <Badge variant="secondary" className="text-xs">
-                          {club.category}
-                        </Badge>
-                      )}
+        <TabsContent value="my" className="space-y-6">
+          {myClubs.length === 0 ? (
+            <div className="text-center py-12 border border-dashed rounded-lg">
+              <p className="text-muted-foreground mb-4">You haven't joined any clubs yet.</p>
+              <Button variant="outline" onClick={() => document.querySelector<HTMLElement>('[value="all"]')?.click()}>Browse Clubs</Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {myClubs.map(club => (
+                <Card key={club.id} className="flex flex-col border-l-4 border-l-primary">
+                  <div className="p-4">
+                    <h3 className="font-medium mb-1">{club.name}</h3>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+                      <Users className="h-3 w-3" />
+                      <span>Member</span>
                     </div>
-                  </div>
-                  
-                  <div className="flex flex-col xs:flex-row gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => openDashboard(club)}
-                    >
-                      <span className="hidden xs:inline">Dashboard</span>
-                      <span className="xs:hidden">Dash</span>
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => openChat(club)}
-                      className="gap-1 flex-1"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      <span className="hidden xs:inline">Chat</span>
+                    <Button size="sm" variant="outline" className="w-full gap-2">
+                      View Dashboard
+                      <ArrowRight className="h-3 w-3" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          {myClubs.length === 0 && (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <p className="text-muted-foreground">You haven't joined any clubs yet.</p>
-              </CardContent>
-            </Card>
+                </Card>
+              ))}
+            </div>
           )}
         </TabsContent>
       </Tabs>
-
-      {/* Club Detail Dialog */}
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src={selectedClub?.avatar_url} />
-                <AvatarFallback>
-                  {selectedClub?.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span>{selectedClub?.name}</span>
-                  {selectedClub?.visibility === 'private' ? (
-                    <Lock className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Globe className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </div>
-                {selectedClub?.category && (
-                  <Badge variant="secondary" className="text-xs">
-                    {selectedClub.category}
-                  </Badge>
-                )}
-              </div>
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            {selectedClub?.description && (
-              <div>
-                <h4 className="font-semibold mb-2">About</h4>
-                <p className="text-muted-foreground">{selectedClub.description}</p>
-              </div>
-            )}
-            
-            <div>
-              <h4 className="font-semibold mb-4">Members ({clubMembers.length})</h4>
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {clubMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-2 rounded border">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={member.profiles.avatar_url} />
-                        <AvatarFallback>
-                          {member.profiles.full_name?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm">{member.profiles.full_name}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {getRoleIcon(member.role)}
-                      <span className="text-xs text-muted-foreground capitalize">
-                        {member.role}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Club Chat Dialog */}
-      <Dialog open={showChat} onOpenChange={setShowChat}>
-        <DialogContent className="max-w-4xl h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedChatClub?.name} - Vanishing Chat
-            </DialogTitle>
-          </DialogHeader>
-          
-          {selectedChatClub && (
-            <ClubChat 
-              clubId={selectedChatClub.id} 
-              clubName={selectedChatClub.name}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Club Dashboard */}
-      {showDashboard && selectedDashboardClub && (
-        <ClubDashboard 
-          club={selectedDashboardClub}
-          onClose={() => setShowDashboard(false)}
-          onOpenChat={(club) => {
-            setShowDashboard(false);
-            openChat(club);
-          }}
-        />
-      )}
     </div>
   );
 };

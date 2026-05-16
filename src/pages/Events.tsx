@@ -1,420 +1,183 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import PullToRefresh from '@/components/PullToRefresh';
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Database } from "@/integrations/supabase/types";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, MapPin, Clock, Users, Plus } from "lucide-react";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import { Calendar, MapPin, Users, Plus, Clock, CheckCircle2, Star } from "lucide-react";
-import { format } from "date-fns";
-import { useIsMobile } from "@/hooks/use-mobile";
 
-interface Event {
-  id: string;
-  title: string;
-  description: string | null;
-  event_type: string;
-  location: string | null;
-  start_time: string;
-  end_time: string | null;
-  max_attendees: number | null;
-  created_by: string;
-  profiles: {
-    full_name: string;
-  };
-  rsvp_count?: number;
-  user_rsvp?: string | null;
-}
+type CampusEvent = Database['public']['Tables']['campus_events']['Row'];
 
 const Events = () => {
   const { user } = useAuth();
-  const [events, setEvents] = useState<Event[]>([]);
-  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
-  const [filter, setFilter] = useState<string>("all");
-  const isMobile = useIsMobile();
-  
+  const [events, setEvents] = useState<CampusEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  // Simple Create Form State
   const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
-    event_type: "social",
     location: "",
     start_time: "",
-    end_time: "",
-    max_attendees: "",
+    event_type: "social"
   });
 
   useEffect(() => {
-    if (user) {
-      fetchEvents();
-    }
-  }, [user]);
+    fetchEvents();
+  }, []);
 
   const fetchEvents = async () => {
-    if (!user) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('campus_events')
+      .select('*')
+      .order('start_time', { ascending: true })
+      .gte('start_time', new Date().toISOString()); // Only future events
 
-    // First get events
-    const { data: eventsData, error: eventsError } = await supabase
-      .from("campus_events")
-      .select("*")
-      .gte("start_time", new Date().toISOString())
-      .order("start_time", { ascending: true });
-
-    if (eventsError) {
-      toast.error("Failed to load events");
-      return;
-    }
-
-    if (!eventsData || eventsData.length === 0) {
-      setEvents([]);
-      return;
-    }
-
-    // Get creator profiles
-    const creatorIds = eventsData.map(e => e.created_by);
-    const { data: profilesData } = await supabase
-      .from("profiles")
-      .select("id, full_name")
-      .in("id", creatorIds);
-
-    // Get RSVP counts and user's RSVP status
-    const eventsWithData = await Promise.all(
-      eventsData.map(async (event) => {
-        const { count } = await supabase
-          .from("event_rsvps")
-          .select("*", { count: "exact", head: true })
-          .eq("event_id", event.id)
-          .eq("status", "going");
-
-        const { data: userRsvp } = await supabase
-          .from("event_rsvps")
-          .select("status")
-          .eq("event_id", event.id)
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        const profile = profilesData?.find(p => p.id === event.created_by);
-
-        return {
-          ...event,
-          profiles: {
-            full_name: profile?.full_name || "Unknown",
-          },
-          rsvp_count: count || 0,
-          user_rsvp: userRsvp?.status || null,
-        };
-      })
-    );
-
-    setEvents(eventsWithData);
+    if (!error) setEvents(data || []);
+    setLoading(false);
   };
 
-  const createEvent = async () => {
+  const handleCreate = async () => {
     if (!user) return;
-
     if (!newEvent.title || !newEvent.start_time) {
-      toast.error("Please fill in required fields");
+      toast.error("Title and Start Time required");
       return;
     }
 
-    const { error } = await supabase.from("campus_events").insert({
-      ...newEvent,
-      max_attendees: newEvent.max_attendees ? parseInt(newEvent.max_attendees) : null,
-      created_by: user.id,
+    const { error } = await supabase.from('campus_events').insert({
+      title: newEvent.title,
+      description: newEvent.description,
+      location: newEvent.location,
+      start_time: new Date(newEvent.start_time).toISOString(),
+      event_type: newEvent.event_type as any, // Cast for simplicity logic
+      created_by: user.id
     });
 
     if (error) {
       toast.error("Failed to create event");
-      return;
+      console.error(error);
+    } else {
+      toast.success("Event created!");
+      setIsCreateOpen(false);
+      fetchEvents();
     }
-
-    toast.success("Event created successfully!");
-    setShowCreateDrawer(false);
-    setNewEvent({
-      title: "",
-      description: "",
-      event_type: "social",
-      location: "",
-      start_time: "",
-      end_time: "",
-      max_attendees: "",
-    });
-    fetchEvents();
   };
 
-  const handleRSVP = async (eventId: string, status: string) => {
+  const handleRSVP = async (eventId: string) => {
     if (!user) return;
-
-    const { error } = await supabase
-      .from("event_rsvps")
-      .upsert({
-        event_id: eventId,
-        user_id: user.id,
-        status,
-      });
+    const { error } = await supabase.from('event_rsvps').insert({
+      event_id: eventId,
+      user_id: user.id,
+      status: 'going'
+    });
 
     if (error) {
-      toast.error("Failed to update RSVP");
-      return;
+      if (error.code === '23505') toast.info("You're already going!");
+      else toast.error("RSVP failed");
+    } else {
+      toast.success("RSVP sent!");
     }
-
-    toast.success(status === "going" ? "You're attending!" : "RSVP updated");
-    fetchEvents();
   };
-
-  const getEventTypeBadge = (type: string) => {
-    const variants: Record<string, "default" | "secondary" | "outline"> = {
-      academic: "default",
-      social: "secondary",
-      sports: "outline",
-      club: "secondary",
-      career: "default",
-      other: "outline",
-    };
-    return variants[type] || "secondary";
-  };
-
-  const filteredEvents = events.filter(event => {
-    if (filter === "all") return true;
-    if (filter === "attending") return event.user_rsvp === "going";
-    if (filter === "interested") return event.user_rsvp === "interested";
-    return event.event_type === filter;
-  });
-
-  const handleRefresh = useCallback(async () => {
-    await fetchEvents();
-  }, [user]);
-
-  const CreateEventForm = () => (
-    <div className="space-y-4 px-1">
-      <div>
-        <Label className="text-sm font-medium">Event Title *</Label>
-        <Input
-          value={newEvent.title}
-          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-          placeholder="Study Group for Finals"
-          className="mt-1.5"
-        />
-      </div>
-      <div>
-        <Label className="text-sm font-medium">Event Type *</Label>
-        <Select
-          value={newEvent.event_type}
-          onValueChange={(value) => setNewEvent({ ...newEvent, event_type: value })}
-        >
-          <SelectTrigger className="mt-1.5">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="academic">Academic</SelectItem>
-            <SelectItem value="social">Social</SelectItem>
-            <SelectItem value="sports">Sports</SelectItem>
-            <SelectItem value="club">Club Activity</SelectItem>
-            <SelectItem value="career">Career</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label className="text-sm font-medium">Description</Label>
-        <Textarea
-          value={newEvent.description}
-          onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-          placeholder="Describe the event..."
-          rows={2}
-          className="mt-1.5"
-        />
-      </div>
-      <div>
-        <Label className="text-sm font-medium">Location</Label>
-        <Input
-          value={newEvent.location}
-          onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
-          placeholder="Library Room 301"
-          className="mt-1.5"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label className="text-sm font-medium">Start *</Label>
-          <Input
-            type="datetime-local"
-            value={newEvent.start_time}
-            onChange={(e) => setNewEvent({ ...newEvent, start_time: e.target.value })}
-            className="mt-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <Label className="text-sm font-medium">End</Label>
-          <Input
-            type="datetime-local"
-            value={newEvent.end_time}
-            onChange={(e) => setNewEvent({ ...newEvent, end_time: e.target.value })}
-            className="mt-1.5 text-sm"
-          />
-        </div>
-      </div>
-      <div>
-        <Label className="text-sm font-medium">Max Attendees</Label>
-        <Input
-          type="number"
-          value={newEvent.max_attendees}
-          onChange={(e) => setNewEvent({ ...newEvent, max_attendees: e.target.value })}
-          placeholder="Leave empty for unlimited"
-          className="mt-1.5"
-        />
-      </div>
-      <Button onClick={createEvent} className="w-full mt-2">
-        Create Event
-      </Button>
-    </div>
-  );
 
   return (
-    <PullToRefresh onRefresh={handleRefresh} className="h-full">
-      <div className="container mx-auto px-4 py-4 max-w-6xl">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-xl sm:text-3xl font-bold flex items-center gap-2">
-              <Calendar className="h-6 w-6 sm:h-8 sm:w-8" />
-              Campus Events
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1 hidden sm:block">
-              Discover and attend campus activities
-            </p>
-          </div>
-          <Drawer open={showCreateDrawer} onOpenChange={setShowCreateDrawer}>
-            <DrawerTrigger asChild>
-              <Button size={isMobile ? "sm" : "default"} className="gap-1.5">
-                <Plus className="h-4 w-4" />
-                <span className="hidden xs:inline">Create</span>
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent className="max-h-[90vh]">
-              <DrawerHeader className="pb-2">
-                <DrawerTitle>Create Event</DrawerTitle>
-                <DrawerDescription>
-                  Organize a new event for the campus
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="overflow-y-auto px-4 pb-8">
-                <CreateEventForm />
-              </div>
-            </DrawerContent>
-          </Drawer>
+    <div className="max-w-4xl mx-auto p-4 sm:p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Events</h1>
+          <p className="text-muted-foreground text-sm">What's happening on campus.</p>
         </div>
-
-        {/* Tabs - scrollable on mobile */}
-        <Tabs defaultValue="all" onValueChange={setFilter}>
-          <div className="overflow-x-auto -mx-4 px-4 pb-2">
-            <TabsList className="mb-4 inline-flex w-max min-w-full sm:w-auto">
-              <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
-              <TabsTrigger value="attending" className="text-xs sm:text-sm">Attending</TabsTrigger>
-              <TabsTrigger value="interested" className="text-xs sm:text-sm">Interested</TabsTrigger>
-              <TabsTrigger value="academic" className="text-xs sm:text-sm">Academic</TabsTrigger>
-              <TabsTrigger value="social" className="text-xs sm:text-sm">Social</TabsTrigger>
-              <TabsTrigger value="sports" className="text-xs sm:text-sm">Sports</TabsTrigger>
-            </TabsList>
-          </div>
-
-        <TabsContent value={filter} className="mt-0">
-          <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
-            {filteredEvents.length === 0 ? (
-              <Card className="md:col-span-2">
-                <CardContent className="p-8 sm:p-12 text-center text-muted-foreground">
-                  <Calendar className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-muted-foreground/50" />
-                  <p className="text-base sm:text-lg">No events found</p>
-                  <p className="text-sm mt-2">Be the first to create an event!</p>
-                </CardContent>
-              </Card>
-            ) : (
-              filteredEvents.map((event) => (
-                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-2 sm:pb-4">
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base sm:text-xl truncate">{event.title}</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs sm:text-sm">
-                          by {event.profiles.full_name}
-                        </CardDescription>
-                      </div>
-                      <Badge variant={getEventTypeBadge(event.event_type)} className="text-xs shrink-0">
-                        {event.event_type}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2 sm:space-y-3 pt-0">
-                    {event.description && (
-                      <p className="text-xs sm:text-sm line-clamp-2">{event.description}</p>
-                    )}
-                    <div className="space-y-1.5 text-xs sm:text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                        <span className="truncate">{format(new Date(event.start_time), "PPp")}</span>
-                      </div>
-                      {event.location && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                          <span className="truncate">{event.location}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                        {event.rsvp_count} attending
-                        {event.max_attendees && ` / ${event.max_attendees} max`}
-                      </div>
-                    </div>
-                    <div className="flex gap-2 pt-1 sm:pt-2">
-                      {event.user_rsvp === "going" ? (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="flex-1 h-8 text-xs sm:text-sm"
-                          onClick={() => handleRSVP(event.id, "not_going")}
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                          Attending
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs sm:text-sm"
-                          onClick={() => handleRSVP(event.id, "going")}
-                        >
-                          Attend
-                        </Button>
-                      )}
-                      <Button
-                        variant={event.user_rsvp === "interested" ? "secondary" : "outline"}
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() =>
-                          handleRSVP(
-                            event.id,
-                            event.user_rsvp === "interested" ? "not_going" : "interested"
-                          )
-                        }
-                      >
-                        <Star className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2"><Plus className="h-4 w-4" /> Create Event</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Host an Event</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label>Event Title</Label>
+                <Input value={newEvent.title} onChange={e => setNewEvent({ ...newEvent, title: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>When?</Label>
+                <Input type="datetime-local" onChange={e => setNewEvent({ ...newEvent, start_time: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Where?</Label>
+                <Input placeholder="Location" value={newEvent.location} onChange={e => setNewEvent({ ...newEvent, location: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea value={newEvent.description} onChange={e => setNewEvent({ ...newEvent, description: e.target.value })} />
+              </div>
+              <Button className="w-full" onClick={handleCreate}>Publish Event</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
-    </PullToRefresh>
+
+      <div className="grid gap-4">
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground">Loading calendar...</div>
+        ) : events.length === 0 ? (
+          <div className="text-center py-12 border border-dashed rounded-lg">
+            <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+            <p className="text-muted-foreground">No upcoming events.</p>
+          </div>
+        ) : (
+          events.map(event => (
+            <Card key={event.id} className="flex flex-col sm:flex-row overflow-hidden hover:border-primary/40 transition-colors">
+              {/* Date Block */}
+              <div className="bg-muted/30 w-full sm:w-32 flex flex-col items-center justify-center p-4 border-b sm:border-b-0 sm:border-r border-border">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">
+                  {format(new Date(event.start_time), 'MMM')}
+                </span>
+                <span className="text-3xl font-bold font-mono">
+                  {format(new Date(event.start_time), 'dd')}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {format(new Date(event.start_time), 'eee')}
+                </span>
+              </div>
+
+              {/* Details */}
+              <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between mb-2">
+                    <Badge variant="outline" className="capitalize font-normal">{event.event_type}</Badge>
+                    <Button variant="outline" size="sm" onClick={() => handleRSVP(event.id)}>RSVP</Button>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                    {event.description}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {format(new Date(event.start_time), 'h:mm a')}
+                  </div>
+                  {event.location && (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {event.location}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
   );
 };
 
