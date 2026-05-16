@@ -56,6 +56,7 @@ export interface Database {
           email: string
           full_name: string | null
           avatar_url: string | null
+          college: string | null          // ← college isolation key
           department: string | null
           interests: string[] | null
           bio: string | null
@@ -82,6 +83,7 @@ export interface Database {
           email: string
           full_name?: string | null
           avatar_url?: string | null
+          college?: string | null
           department?: string | null
           interests?: string[] | null
           bio?: string | null
@@ -108,6 +110,7 @@ export interface Database {
           email?: string
           full_name?: string | null
           avatar_url?: string | null
+          college?: string | null
           department?: string | null
           interests?: string[] | null
           bio?: string | null
