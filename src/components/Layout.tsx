@@ -1,16 +1,12 @@
 import { ReactNode, useState } from 'react';
-import {
-  Users, MessageSquare, Bell, Hash, Calendar, User,
-  GraduationCap, Sparkles, Menu, X, LogOut, Search,
-  ChevronRight, PanelLeftClose, PanelLeft, Home
-} from 'lucide-react';
+import { Users, MessageSquare, Bell, Hash, Calendar, User, Menu, X, LogOut, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import PWAInstall from './PWAInstall';
+import { getRandomQuote } from '@/utils/quotes';
 
 interface LayoutProps {
   children: ReactNode;
@@ -20,198 +16,151 @@ const Layout = ({ children }: LayoutProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Sparkles, label: 'Discover', path: '/discover' },
     { icon: Users, label: 'Connect', path: '/connect' },
-    { icon: MessageSquare, label: 'Messages', path: '/messages' },
     { icon: Bell, label: 'Pulse', path: '/pulse' },
+    { icon: Zap, label: 'Study Room', path: '/study-room' },
     { icon: Hash, label: 'AnonySpace', path: '/anonyspace' },
-    { icon: Calendar, label: 'Events', path: '/events' },
-    { icon: GraduationCap, label: 'ClubVerse', path: '/clubverse' },
-    { icon: MessageSquare, label: 'Alumni', path: '/alumni' },
+    { icon: Calendar, label: 'ClubVerse', path: '/clubverse' },
+    { icon: MessageSquare, label: 'Messages', path: '/messages' },
+    { icon: User, label: 'Profile', path: '/profile' },
   ];
 
-  const isAuthPage = location.pathname === '/auth';
-  if (isAuthPage) return <div className="min-h-screen bg-background">{children}</div>;
-
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-sans">
-      {/* 
-        ========================================
-        SIDEBAR NAVIGATION (Desktop)
-        ========================================
-      */}
+    <div className="min-h-screen bg-background font-sans selection:bg-primary/20">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px] animate-float" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/10 blur-[120px] animate-float" style={{ animationDelay: '-3s' }} />
+      </div>
+
       {user && (
-        <aside
-          className={cn(
-            "hidden lg:flex flex-col border-r border-border bg-sidebar-background transition-all duration-300 ease-in-out h-screen sticky top-0",
-            sidebarCollapsed ? "w-16" : "w-64"
-          )}
-        >
-          {/* Sidebar Header */}
-          <div className="h-14 flex items-center justify-between px-4 border-b border-border/50">
-            {!sidebarCollapsed && (
-              <div
-                className="flex items-center gap-2 font-semibold cursor-pointer"
-                onClick={() => navigate('/')}
-              >
-                <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs">B</div>
-                <span className="truncate">Bazinga</span>
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-auto h-8 w-8 text-muted-foreground hover:text-foreground"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+        <>
+          {/* Desktop Floating Sidebar */}
+          <aside className="hidden lg:flex fixed left-6 top-6 bottom-6 w-20 flex-col items-center py-8 glass rounded-3xl z-50 transition-all duration-300 hover:w-64 group overflow-hidden">
+            <div
+              className="mb-8 cursor-pointer transform transition-transform hover:scale-110"
+              onClick={() => navigate('/')}
             >
-              {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-            </Button>
-          </div>
-
-          {/* User Profile Snippet */}
-          {!sidebarCollapsed && (
-            <div className="px-3 py-4">
-              <button
-                onClick={() => navigate('/profile')}
-                className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-muted/60 transition-colors text-left group"
-              >
-                <Avatar className="h-8 w-8 rounded border border-border">
-                  <AvatarImage src={user.user_metadata?.avatar_url} />
-                  <AvatarFallback className="rounded bg-muted text-xs">
-                    {user.email?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 overflow-hidden">
-                  <p className="text-sm font-medium truncate">{user.user_metadata?.full_name || 'Student'}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
+              <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-primary/25 overflow-hidden">
+                <img src="/favicon.ico" alt="Bazinga Logo" className="h-8 w-8 object-contain" />
+              </div>
             </div>
-          )}
 
-          {/* Navigation Links */}
-          <ScrollArea className="flex-1 px-3">
-            <nav className="flex flex-col gap-1 py-2">
+            <nav className="flex-1 w-full px-4 space-y-2">
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
-                  <button
+                  <Button
                     key={item.path}
-                    onClick={() => navigate(item.path)}
+                    variant="ghost"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                      "w-full justify-start h-12 relative overflow-hidden transition-all duration-300",
                       isActive
-                        ? "bg-muted text-foreground font-medium"
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                      sidebarCollapsed && "justify-center px-2"
+                        ? "bg-primary/10 text-primary hover:bg-primary/15"
+                        : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                     )}
-                    title={sidebarCollapsed ? item.label : undefined}
+                    onClick={() => navigate(item.path)}
                   >
-                    <item.icon className={cn("h-4 w-4 shrink-0", isActive && "text-foreground")} />
-                    {!sidebarCollapsed && <span>{item.label}</span>}
-                  </button>
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                    )}
+                    <item.icon className={cn("h-5 w-5 min-w-[20px] transition-colors", isActive ? "text-primary" : "")} />
+                    <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium">
+                      {item.label}
+                    </span>
+                  </Button>
                 );
               })}
             </nav>
-          </ScrollArea>
 
-          {/* Sidebar Footer */}
-          <div className="p-3 border-t border-border/50 gap-1 flex flex-col">
-            <div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "justify-between px-2")}>
-              <ThemeToggle />
-              {!sidebarCollapsed && (
+            <div className="w-full px-4 space-y-4 mt-auto">
+              <PWAInstall />
+              <div className="pt-2 border-t border-white/10 w-full space-y-4">
                 <Button
                   variant="ghost"
-                  size="sm"
+                  className="w-full justify-start h-12 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   onClick={signOut}
-                  className="text-muted-foreground hover:text-destructive h-8 px-2"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
+                  <LogOut className="h-5 w-5 min-w-[20px]" />
+                  <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap overflow-hidden text-ellipsis">
+                    Sign Out
+                  </span>
+                </Button>
+
+                {/* Subtle Sidebar Quote */}
+                <div className="px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden">
+                  <p className="text-[10px] text-muted-foreground/40 italic leading-tight text-center">
+                    "{getRandomQuote('punchy')}"
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Mobile Header */}
+          <header className="lg:hidden fixed top-0 left-0 right-0 h-16 glass z-50 px-4 flex items-center justify-between">
+            <div className="flex items-center gap-2" onClick={() => navigate('/')}>
+              <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center shadow-md overflow-hidden">
+                <img src="/favicon.ico" alt="Bazinga Logo" className="h-6 w-6 object-contain" />
+              </div>
+              <span className="font-bold text-lg text-foreground">Bazinga</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
+          </header>
+
+          {/* Mobile Menu Overlay */}
+          {isMobileMenuOpen && (
+            <div className="fixed inset-0 top-16 bg-background z-40 lg:hidden animate-fade-in p-4 overflow-y-auto">
+              <nav className="space-y-2">
+                {menuItems.map((item) => (
+                  <Button
+                    key={item.path}
+                    variant={location.pathname === item.path ? "secondary" : "ghost"}
+                    className="w-full justify-start h-12 text-lg"
+                    onClick={() => {
+                      navigate(item.path);
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <item.icon className="h-5 w-5 mr-3" />
+                    {item.label}
+                  </Button>
+                ))}
+                <div className="h-px bg-border my-4" />
+                <PWAInstall />
+                <div className="h-px bg-border my-4" />
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-12 text-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={signOut}
+                >
+                  <LogOut className="h-5 w-5 mr-3" />
                   Sign Out
                 </Button>
-              )}
+              </nav>
             </div>
-          </div>
-        </aside>
+          )}
+        </>
       )}
 
-      {/* 
-        ========================================
-        MAIN CONTENT AREA
-        ========================================
-      */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile Header */}
-        <header className="lg:hidden h-14 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50 flex items-center justify-between px-4">
-          <div className="flex items-center gap-2 font-semibold">
-            <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs">B</div>
-            <span>Bazinga</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </div>
-        </header>
-
-        {/* Mobile Menu Overlay */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-40 bg-background pt-16 px-6 pb-6 overflow-y-auto animate-in fade-in slide-in-from-top-4">
-            <nav className="flex flex-col gap-2">
-              {menuItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => {
-                    navigate(item.path);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors",
-                    location.pathname === item.path
-                      ? "bg-muted text-foreground font-medium"
-                      : "text-muted-foreground hover:bg-muted/50"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                </button>
-              ))}
-              <div className="h-px bg-border my-2" />
-              <button
-                onClick={() => {
-                  navigate('/profile');
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:bg-muted/50"
-              >
-                <User className="h-5 w-5" />
-                Profile
-              </button>
-              <button
-                onClick={() => {
-                  signOut();
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-destructive hover:bg-destructive/10"
-              >
-                <LogOut className="h-5 w-5" />
-                Sign Out
-              </button>
-            </nav>
-          </div>
-        )}
-
-        <main className="flex-1 overflow-auto">
+      {/* Main Content Area */}
+      <main className={cn(
+        "relative min-h-screen transition-all duration-300",
+        user ? "lg:pl-32 lg:pr-6 pt-20 lg:pt-6" : ""
+      )}>
+        <div className="max-w-7xl mx-auto animate-fade-in">
           {children}
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };

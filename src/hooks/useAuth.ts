@@ -45,11 +45,35 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkProfile = async (userId: string) => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, department')
+        .eq('id', userId)
+        .single();
+
+      if (data && data.full_name && data.department) {
+        setHasProfile(true);
+      } else {
+        setHasProfile(false);
+      }
+    };
+
+    if (user) {
+      checkProfile(user.id);
+    } else {
+      setHasProfile(null);
+    }
+  }, [user]);
+
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
       // Use dynamic URL for proper redirect in all environments
       const redirectUrl = `${getAppUrl()}/`;
-      
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -132,7 +156,7 @@ export const useAuth = () => {
 
       // Use dynamic URL for proper redirect in all environments
       const redirectUrl = `${getAppUrl()}/auth?reset=true`;
-      
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,
       });
@@ -182,6 +206,7 @@ export const useAuth = () => {
   return {
     user,
     session,
+    hasProfile,
     loading,
     signUp,
     signIn,

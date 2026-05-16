@@ -1,96 +1,112 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Notion-esque Light Mode - "Paper" */
-    --background: 0 0% 100%;
-    /* Pure White */
-    --foreground: 0 0% 10%;
-    /* Nearly Black */
+    /* Default to Dark Mode values since we are going for a dark-first design */
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-    /* Neutral Grays for Borders/Selects */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 8.9% 46.1%;
+    --primary: 263.4 70% 50.4%;
+    /* Vivid Violet */
+    --primary-foreground: 210 40% 98%;
 
-    --border: 220 13% 91%;
-    /* Light Gray Borders */
-    --input: 220 13% 91%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    /* Highlighters / Accents */
-    --primary: 0 0% 10%;
-    /* Black for primary actions */
-    --primary-foreground: 0 0% 100%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --secondary: 220 14% 96%;
-    /* Light Gray for secondary actions */
-    --secondary-foreground: 0 0% 10%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
 
-    --accent: 220 14% 96%;
-    /* Hover state */
-    --accent-foreground: 0 0% 10%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9.1% 97.8%;
+    /* Gen Z Palette */
+    --pop: 320 100% 60%;
+    /* Neon Pink */
+    --pop-foreground: 0 0% 100%;
 
-    --ring: 0 0% 10%;
+    --fresh: 140 100% 60%;
+    /* Neon Green */
+    --fresh-foreground: 0 0% 0%;
 
-    --radius: 0.5rem;
-    /* Minimal rounding */
+    --glow: 190 100% 60%;
+    /* Electric Blue */
+    --glow-foreground: 0 0% 0%;
 
-    /* Sidebar specific */
-    --sidebar-background: 240 5% 98%;
-    /* Slightly off-white sidebar */
-    --sidebar-foreground: 240 5% 26%;
-    --sidebar-border: 220 13% 91%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 263.4 70% 50.4%;
+
+    --radius: 1rem;
+    /* Softer, rounder corners */
+
+    --sidebar-background: 240 6% 8%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 263.4 70% 50.4%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 263.4 70% 50.4%;
   }
 
   .dark {
-    /* Notion-esque Dark Mode - "Slate" */
-    --background: 224 71% 4%;
-    /* Deep Navy/Black */
-    --foreground: 210 40% 98%;
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 210 40% 98%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --primary: 210 40% 98%;
-    /* White for primary actions */
-    --primary-foreground: 222 47% 11%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --ring: 212.7 26.8% 83.9%;
+    /* Gen Z Palette */
+    --pop: 320 100% 60%;
+    --pop-foreground: 0 0% 100%;
 
-    --sidebar-background: 222 47% 9%;
-    /* Slightly lighter than bg */
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
+    --fresh: 140 100% 60%;
+    --fresh-foreground: 0 0% 0%;
+
+    --glow: 190 100% 60%;
+    --glow-foreground: 0 0% 0%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 263.4 70% 50.4%;
+
+    --sidebar-background: 240 6% 8%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 263.4 70% 50.4%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 263.4 70% 50.4%;
   }
 }
 
@@ -99,75 +115,66 @@
     @apply border-border;
   }
 
-  html {
-    /* Inter as default sans */
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  }
-
   body {
-    @apply bg-background text-foreground;
-  }
-
-  /* Serif styling for headers to give that "Editorial/Note" feel */
-  h1,
-  h2,
-  h3,
-  h4 {
-    font-family: 'Inter', sans-serif;
-    /* Keeping it clean, or use 'Lora' for serif headers */
-    @apply tracking-tight font-semibold;
-  }
-
-  /* Monospace for small labels/tags */
-  .font-mono {
-    font-family: 'JetBrains Mono', monospace;
-  }
-}
-
-@layer components {
-
-  /* Notion-like Card: Flat, Bordered, No Shadow (or very subtle) */
-  .note-card {
-    @apply bg-card border border-border rounded-lg transition-colors duration-200;
-  }
-
-  .note-card:hover {
-    @apply bg-accent/50;
-  }
-
-  /* Sidebar styling */
-  .sidebar {
-    @apply bg-sidebar-background border-r border-sidebar-border h-screen sticky top-0;
-  }
-
-  /* Buttons like chips */
-  .btn-note {
-    @apply rounded-md font-medium transition-all active:scale-95;
+    @apply bg-background text-foreground antialiased selection:bg-pop/30 selection:text-pop;
+    background-image:
+      radial-gradient(circle at 15% 15%, hsl(var(--pop) / 0.08), transparent 40%),
+      radial-gradient(circle at 85% 15%, hsl(var(--glow) / 0.08), transparent 40%),
+      radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.1), transparent 50%),
+      radial-gradient(circle at 15% 85%, hsl(var(--fresh) / 0.08), transparent 40%),
+      radial-gradient(circle at 85% 85%, hsl(var(--pop) / 0.05), transparent 40%);
+    background-attachment: fixed;
   }
 }
 
 @layer utilities {
-
-  /* Highlighter Utilites */
-  .highlight-yellow {
-    @apply bg-yellow-100 text-yellow-900 data-[state=active]:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-100;
+  .glass {
+    @apply bg-background/60 backdrop-blur-xl border border-white/10 shadow-lg;
   }
 
-  .highlight-blue {
-    @apply bg-blue-100 text-blue-900 data-[state=active]:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-100;
+  .glass-card {
+    @apply bg-card/40 backdrop-blur-md border border-white/5 shadow-xl hover:border-primary/20 transition-all duration-300;
   }
 
-  .highlight-red {
-    @apply bg-red-100 text-red-900 data-[state=active]:bg-red-200 dark:bg-red-900/30 dark:text-red-100;
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/70;
   }
 
-  .highlight-green {
-    @apply bg-green-100 text-green-900 data-[state=active]:bg-green-200 dark:bg-green-900/30 dark:text-green-100;
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-400 to-pink-400;
   }
 
-  .bg-dot-grid {
-    background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
-    background-size: 24px 24px;
-    opacity: 0.1;
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
   }
 }

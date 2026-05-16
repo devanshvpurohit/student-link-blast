@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, MessageCircle } from 'lucide-react';
+import { Send, MessageCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -60,7 +60,6 @@ const Messages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
@@ -77,7 +76,6 @@ const Messages = () => {
     if (selectedConnection) {
       fetchMessages(selectedConnection.id);
       
-      // Set up real-time subscription for messages
       const subscription = supabase
         .channel('messages')
         .on(
@@ -120,7 +118,6 @@ const Messages = () => {
       return;
     }
 
-    // Get last message for each connection
     const connectionsWithMessages = await Promise.all(
       (data || []).map(async (connection) => {
         const { data: lastMessage } = await supabase
@@ -175,7 +172,6 @@ const Messages = () => {
     try {
       let imageUrl: string | null = null;
 
-      // Upload image if selected
       if (selectedImage) {
         const fileName = `${user.id}/${Date.now()}-${selectedImage.name}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -231,7 +227,6 @@ const Messages = () => {
     setLoading(true);
 
     try {
-      // Upload voice note to storage
       const fileName = `${user.id}/${Date.now()}.webm`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('voice-notes')
@@ -239,18 +234,16 @@ const Messages = () => {
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data: urlData } = supabase.storage
         .from('voice-notes')
         .getPublicUrl(uploadData.path);
 
-      // Insert message with voice note URL
       const { error: messageError } = await supabase
         .from('messages')
         .insert({
           connection_id: selectedConnection.id,
           sender_id: user.id,
-          content: '', // Empty content for voice messages
+          content: '',
           voice_note_url: urlData.publicUrl,
           voice_note_duration: duration,
         });
@@ -262,8 +255,8 @@ const Messages = () => {
       setShowVoiceRecorder(false);
       
       toast({
-        title: "Voice message sent",
-        description: "Your voice message has been sent successfully",
+        title: "Sent",
+        description: "Voice message delivered",
       });
       
     } catch (error) {
@@ -279,60 +272,70 @@ const Messages = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col lg:flex-row">
+    <div className="h-screen flex flex-col lg:flex-row animate-in">
       {/* Connections Sidebar */}
       <div className="lg:w-80 border-r lg:border-b-0 border-b bg-card">
-        <div className="p-3 lg:p-4 border-b">
-          <h2 className="text-base lg:text-lg font-semibold">Messages</h2>
+        <div className="p-4 border-b">
+          <p className="text-sm text-muted-foreground mb-1">Your Chats</p>
+          <h2 className="text-2xl font-bold tracking-tight">Messages</h2>
         </div>
         
-        <ScrollArea className="h-48 lg:h-[calc(100vh-80px)]">
+        <ScrollArea className="h-48 lg:h-[calc(100vh-100px)]">
           <div className="p-2">
-            {connections.map((connection) => (
-              <div
-                key={connection.id}
-                className={`p-2 lg:p-3 rounded-lg cursor-pointer hover:bg-accent transition-colors ${
-                  selectedConnection?.id === connection.id ? 'bg-accent' : ''
-                }`}
-                onClick={() => setSelectedConnection(connection)}
-              >
-                <div className="flex items-center space-x-2 lg:space-x-3">
-                  <Avatar className="h-8 w-8 lg:h-10 lg:w-10">
-                    <AvatarImage src={connection.other_profile.avatar_url} />
-                    <AvatarFallback className="text-xs lg:text-sm">
-                      {connection.other_profile.full_name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm lg:text-base font-medium truncate">
-                        {connection.other_profile.full_name}
-                      </h3>
-                      <Badge variant="secondary" className="text-xs hidden lg:block">
-                        {connection.connection_type}
-                      </Badge>
-                    </div>
+            {connections.length === 0 ? (
+              <div className="text-center py-8 px-4">
+                <p className="text-muted-foreground">No connections yet</p>
+                <p className="text-sm text-muted-foreground mt-1">Start connecting with others</p>
+              </div>
+            ) : (
+              connections.map((connection) => (
+                <div
+                  key={connection.id}
+                  className={`p-3 rounded-md cursor-pointer transition-colors mb-1 ${
+                    selectedConnection?.id === connection.id 
+                      ? 'bg-accent/10' 
+                      : 'hover:bg-muted'
+                  }`}
+                  onClick={() => setSelectedConnection(connection)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-10 w-10 border border-border">
+                      <AvatarImage src={connection.other_profile.avatar_url} />
+                      <AvatarFallback className="bg-accent/10 text-accent">
+                        {connection.other_profile.full_name?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
                     
-                    {connection.last_message && (
-                      <div className="text-xs lg:text-sm text-muted-foreground">
-                        <p className="truncate">
-                          {connection.last_message.sender_id === user?.id && 'You: '}
-                          {connection.last_message.voice_note_url 
-                            ? '🎤 Voice message' 
-                            : connection.last_message.image_url 
-                              ? '📷 Photo'
-                              : connection.last_message.content}
-                        </p>
-                        <p className="text-xs">
-                          {formatDistanceToNow(new Date(connection.last_message.created_at), { addSuffix: true })}
-                        </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-sm truncate">
+                          {connection.other_profile.full_name}
+                        </h3>
+                        <Badge variant="secondary" className="text-xs hidden lg:block">
+                          {connection.connection_type}
+                        </Badge>
                       </div>
-                    )}
+                      
+                      {connection.last_message && (
+                        <div className="text-xs text-muted-foreground">
+                          <p className="truncate">
+                            {connection.last_message.sender_id === user?.id && 'You: '}
+                            {connection.last_message.voice_note_url 
+                              ? 'Voice message' 
+                              : connection.last_message.image_url 
+                                ? 'Photo'
+                                : connection.last_message.content}
+                          </p>
+                          <p className="text-xs mt-0.5">
+                            {formatDistanceToNow(new Date(connection.last_message.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </ScrollArea>
       </div>
@@ -342,26 +345,26 @@ const Messages = () => {
         {selectedConnection ? (
           <>
             {/* Chat Header */}
-            <div className="p-3 lg:p-4 border-b bg-card">
-              <div className="flex items-center space-x-2 lg:space-x-3">
-                <Avatar className="h-8 w-8 lg:h-10 lg:w-10">
+            <div className="p-4 border-b bg-card">
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-10 w-10 border border-accent/20">
                   <AvatarImage src={selectedConnection.other_profile.avatar_url} />
-                  <AvatarFallback className="text-xs lg:text-sm">
+                  <AvatarFallback className="bg-accent/10 text-accent">
                     {selectedConnection.other_profile.full_name?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-sm lg:text-base font-semibold">{selectedConnection.other_profile.full_name}</h3>
+                  <h3 className="font-medium">{selectedConnection.other_profile.full_name}</h3>
                   <Badge variant="secondary" className="text-xs">
-                    {selectedConnection.connection_type} connection
+                    {selectedConnection.connection_type}
                   </Badge>
                 </div>
               </div>
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-2 lg:p-4">
-              <div className="space-y-3 lg:space-y-4">
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
                 {messages.map((message) => {
                   const isMe = message.sender_id === user?.id;
                   
@@ -371,14 +374,14 @@ const Messages = () => {
                       className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                     >
                       <div className={`flex items-start space-x-2 max-w-[85%] lg:max-w-[70%] ${isMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                        <Avatar className="h-6 w-6 lg:h-8 lg:w-8 flex-shrink-0">
+                        <Avatar className="h-8 w-8 flex-shrink-0 border border-border">
                           <AvatarImage src={message.profiles.avatar_url} />
                           <AvatarFallback className="text-xs">
                             {message.profiles.full_name?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         
-                        <div className={`rounded-lg p-2 lg:p-3 ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <div className={`rounded-lg p-3 ${isMe ? 'bg-accent text-accent-foreground' : 'bg-muted'}`}>
                           {message.voice_note_url ? (
                             <VoiceNotePlayer 
                               audioUrl={message.voice_note_url} 
@@ -387,9 +390,9 @@ const Messages = () => {
                           ) : message.image_url ? (
                             <ImageMessage imageUrl={message.image_url} />
                           ) : (
-                            <p className="text-sm lg:text-base whitespace-pre-wrap">{message.content}</p>
+                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                           )}
-                          <p className={`text-xs mt-1 ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                          <p className={`text-xs mt-1 ${isMe ? 'text-accent-foreground/70' : 'text-muted-foreground'}`}>
                             {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                           </p>
                         </div>
@@ -401,7 +404,7 @@ const Messages = () => {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="p-3 lg:p-4 border-t bg-card">
+            <div className="p-4 border-t bg-card">
               {showVoiceRecorder ? (
                 <VoiceNoteRecorder
                   onSendVoiceNote={handleSendVoiceNote}
@@ -409,10 +412,9 @@ const Messages = () => {
                 />
               ) : (
                 <div className="space-y-2">
-                  {/* Image Preview */}
                   {selectedImage && (
-                    <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                      <div className="relative w-16 h-16 rounded-lg overflow-hidden">
+                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                      <div className="relative w-12 h-12 rounded overflow-hidden">
                         <img 
                           src={URL.createObjectURL(selectedImage)} 
                           alt="Selected" 
@@ -440,7 +442,6 @@ const Messages = () => {
                       onKeyPress={handleKeyPress}
                       placeholder="Type a message..."
                       disabled={loading}
-                      className="text-sm lg:text-base"
                     />
                     <div className="flex space-x-1">
                       <ImagePicker
@@ -456,9 +457,9 @@ const Messages = () => {
                         onClick={sendMessage} 
                         disabled={loading || (!newMessage.trim() && !selectedImage)}
                         size="sm"
-                        className="px-2 lg:px-4"
+                        className="btn-accent px-4"
                       >
-                        <Send className="h-4 w-4" />
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
@@ -468,10 +469,12 @@ const Messages = () => {
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No conversation selected</h3>
-              <p className="text-muted-foreground">Choose a connection to start messaging</p>
+            <div className="text-center p-8 card-elevated max-w-sm mx-4">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageCircle className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Select a conversation</h3>
+              <p className="text-muted-foreground text-sm">Choose a connection to start chatting</p>
             </div>
           </div>
         )}

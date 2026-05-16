@@ -97,7 +97,7 @@ export const subscribeToPush = async (vapidPublicKey?: string): Promise<PushSubs
   }
 
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager: PushManager };
     
     // Check existing subscription
     let subscription = await registration.pushManager.getSubscription();
@@ -125,7 +125,7 @@ export const subscribeToPush = async (vapidPublicKey?: string): Promise<PushSubs
 // Unsubscribe from push notifications
 export const unsubscribeFromPush = async (): Promise<boolean> => {
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager: PushManager };
     const subscription = await registration.pushManager.getSubscription();
     
     if (subscription) {
