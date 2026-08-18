@@ -66,15 +66,6 @@ export type Database = {
       }
       anon_post_reports: {
         Row: {
-          id: string
-          email: string
-          full_name: string | null
-          avatar_url: string | null
-          college: string | null          // ← college isolation key
-          department: string | null
-          interests: string[] | null
-          bio: string | null
-          year_of_study: number | null
           created_at: string
           id: string
           post_id: string
@@ -82,15 +73,6 @@ export type Database = {
           reporter_id: string
         }
         Insert: {
-          id: string
-          email: string
-          full_name?: string | null
-          avatar_url?: string | null
-          college?: string | null
-          department?: string | null
-          interests?: string[] | null
-          bio?: string | null
-          year_of_study?: number | null
           created_at?: string
           id?: string
           post_id: string
@@ -98,15 +80,6 @@ export type Database = {
           reporter_id: string
         }
         Update: {
-          id?: string
-          email?: string
-          full_name?: string | null
-          avatar_url?: string | null
-          college?: string | null
-          department?: string | null
-          interests?: string[] | null
-          bio?: string | null
-          year_of_study?: number | null
           created_at?: string
           id?: string
           post_id?: string
@@ -661,10 +634,99 @@ export type Database = {
         }
         Relationships: []
       }
+      project_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_votes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          college: string | null
+          created_at: string | null
+          deleted_at: string | null
+          demo_url: string | null
+          description: string
+          github_url: string | null
+          id: string
+          image_url: string | null
+          is_winner: boolean | null
+          likes: number | null
+          month: string | null
+          submitted_by: string
+          tech_stack: string[] | null
+          title: string
+        }
+        Insert: {
+          college?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          demo_url?: string | null
+          description: string
+          github_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_winner?: boolean | null
+          likes?: number | null
+          month?: string | null
+          submitted_by: string
+          tech_stack?: string[] | null
+          title: string
+        }
+        Update: {
+          college?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          demo_url?: string | null
+          description?: string
+          github_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_winner?: boolean | null
+          likes?: number | null
+          month?: string | null
+          submitted_by?: string
+          tech_stack?: string[] | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           bio: string | null
+          college: string | null
           created_at: string | null
           current_company: string | null
           current_position: string | null
@@ -691,6 +753,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          college?: string | null
           created_at?: string | null
           current_company?: string | null
           current_position?: string | null
@@ -717,6 +780,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          college?: string | null
           created_at?: string | null
           current_company?: string | null
           current_position?: string | null

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
@@ -22,12 +22,8 @@ const ClubVerse = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    fetchClubs();
-    if (user) fetchMyClubs();
-  }, [user]);
 
-  const fetchClubs = async () => {
+  const fetchClubs = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('clubs')
@@ -38,9 +34,9 @@ const ClubVerse = () => {
     if (error) console.error(error);
     else setClubs(data || []);
     setLoading(false);
-  };
+  }, []);
 
-  const fetchMyClubs = async () => {
+  const fetchMyClubs = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('club_members')
@@ -49,10 +45,15 @@ const ClubVerse = () => {
 
     if (data) {
       // Extract clubs from the join
-      const joinedClubs = data.map((d: any) => d.clubs).filter(Boolean);
+      const joinedClubs = data.map((d) => d.clubs).filter((c): c is Club => c !== null);
       setMyClubs(joinedClubs);
     }
-  };
+  }, [user]);
+  useEffect(() => {
+    fetchClubs();
+    if (user) fetchMyClubs();
+  }, [user, fetchClubs, fetchMyClubs]);
+
 
   const joinClub = async (clubId: string) => {
     if (!user) return;

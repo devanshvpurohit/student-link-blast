@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,14 +50,8 @@ const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-      fetchPhotos();
-    }
-  }, [user]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -79,9 +73,9 @@ const Profile = () => {
       setEditedProfile(profileData);
       setShowAlumniFields(data.is_alumni || false);
     }
-  };
+  }, [user, toast]);
 
-  const fetchPhotos = async () => {
+  const fetchPhotos = useCallback(async () => {
     if (!user) return;
 
     const { data, error } = await supabase
@@ -93,7 +87,14 @@ const Profile = () => {
     if (!error && data) {
       setProfilePhotos(data);
     }
-  };
+  }, [user]);
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+      fetchPhotos();
+    }
+  }, [user, fetchProfile, fetchPhotos]);
+
 
   const handleSave = async () => {
     const { error } = await supabase

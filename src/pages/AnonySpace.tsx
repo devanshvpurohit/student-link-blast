@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,11 +33,8 @@ const AnonySpace = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     const { data: postsData, error: postsError } = await supabase
       .from('anon_posts')
       .select('*')
@@ -70,7 +67,11 @@ const AnonySpace = () => {
     } else {
       setPosts(postsData || []);
     }
-  };
+  }, [user, toast]);
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
 
   const createPost = async () => {
     if (!content.trim()) {

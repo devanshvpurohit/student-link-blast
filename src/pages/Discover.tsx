@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,13 +46,8 @@ const Discover = () => {
         dating_gender: "",
     });
 
-    useEffect(() => {
-        if (user) {
-            initDiscover();
-        }
-    }, [user]);
 
-    const initDiscover = async () => {
+    const initDiscover = useCallback(async () => {
         setLoading(true);
         if (!user) return;
 
@@ -101,7 +96,13 @@ const Discover = () => {
         }
 
         setLoading(false);
-    };
+    }, [user]);
+    useEffect(() => {
+        if (user) {
+            initDiscover();
+        }
+    }, [user, initDiscover]);
+
 
     const handleAction = async (action: 'pass' | 'like') => {
         const currentProfile = profiles[currentIndex];

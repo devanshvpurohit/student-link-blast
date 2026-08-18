@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,24 +34,13 @@ export const DatingChat = ({ matchId, otherUser, onBack }: DatingChatProps) => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (user && matchId) {
-      initializeConversation();
-    }
-  }, [user, matchId]);
 
-  useEffect(() => {
-    if (conversationId) {
-      fetchMessages();
-      subscribeToMessages();
-    }
-  }, [conversationId]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const initializeConversation = async () => {
+  const initializeConversation = useCallback(async () => {
     // Check if conversation exists
     const { data: existingConv } = await supabase
       .from("dating_conversations")
@@ -76,9 +65,9 @@ export const DatingChat = ({ matchId, otherUser, onBack }: DatingChatProps) => {
 
       setConversationId(newConv.id);
     }
-  };
+  }, [matchId]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
 
     const { data, error } = await supabase
@@ -93,9 +82,16 @@ export const DatingChat = ({ matchId, otherUser, onBack }: DatingChatProps) => {
     }
 
     setMessages(data || []);
-  };
+  }, [conversationId]);
 
-  const subscribeToMessages = () => {
+  useEffect(() => {
+    if (user && matchId) {
+      initializeConversation();
+    }
+  }, [user, matchId, initializeConversation]);
+
+
+  const subscribeToMessages = useCallback(() => {
     if (!conversationId) return;
 
     const channel = supabase
@@ -117,7 +113,14 @@ export const DatingChat = ({ matchId, otherUser, onBack }: DatingChatProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  };
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (conversationId) {
+      fetchMessages();
+      subscribeToMessages();
+    }
+  }, [conversationId, fetchMessages, subscribeToMessages]);
 
   const sendMessage = async () => {
     if (!user || !conversationId || !newMessage.trim()) return;

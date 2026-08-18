@@ -18,6 +18,7 @@ import StudyRoom from "./pages/StudyRoom";
 import Alumni from "./pages/Alumni";
 import Discover from "./pages/Discover";
 import Events from "./pages/Events";
+import Projects from "./pages/Projects";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import { useAuth } from "./hooks/useAuth";
@@ -138,6 +139,11 @@ const App = () => (
             <Route path="/events" element={
               <ProtectedRoute>
                 <Layout><Events /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects" element={
+              <ProtectedRoute>
+                <Layout><Projects /></Layout>
               </ProtectedRoute>
             } />
 

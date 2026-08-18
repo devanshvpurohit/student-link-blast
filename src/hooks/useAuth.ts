@@ -93,10 +93,10 @@ export const useAuth = () => {
       });
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Something went wrong",
         variant: "destructive",
       });
       return { error };
@@ -118,10 +118,10 @@ export const useAuth = () => {
       });
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Something went wrong",
         variant: "destructive",
       });
       return { error };
@@ -137,10 +137,10 @@ export const useAuth = () => {
         title: "Signed out",
         description: "You have been successfully signed out.",
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Something went wrong",
         variant: "destructive",
       });
     }
@@ -169,10 +169,10 @@ export const useAuth = () => {
       });
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Something went wrong",
         variant: "destructive",
       });
       return { error };
@@ -193,10 +193,10 @@ export const useAuth = () => {
       });
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Something went wrong",
         variant: "destructive",
       });
       return { error };

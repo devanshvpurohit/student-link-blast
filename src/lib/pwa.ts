@@ -71,7 +71,7 @@ export const isAppInstalled = (): boolean => {
   }
 
   // Check iOS standalone
-  if ((navigator as any).standalone === true) {
+  if ((navigator as Navigator & { standalone?: boolean }).standalone === true) {
     return true;
   }
 

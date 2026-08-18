@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -41,11 +41,8 @@ const Pulse = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     const { data, error } = await supabase
       .from('posts')
       .select(`
@@ -63,7 +60,11 @@ const Pulse = () => {
     } else {
       setPosts((data || []) as Post[]);
     }
-  };
+  }, [toast]);
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
 
   const uploadImage = async (file: File): Promise<string | null> => {
     const fileExt = file.name.split('.').pop();
@@ -230,7 +231,7 @@ const Pulse = () => {
                   className="bg-white/5 border-white/10 focus:border-primary/50 text-lg font-medium"
                 />
 
-                <Select value={type} onValueChange={(value: any) => setType(value)}>
+                <Select value={type} onValueChange={(value) => setType(value as 'news' | 'event' | 'announcement' | 'general')}>
                   <SelectTrigger className="bg-white/5 border-white/10">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>

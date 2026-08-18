@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -62,21 +62,9 @@ const Dating = () => {
     dating_bio: "",
   });
 
-  useEffect(() => {
-    if (user) {
-      fetchDatingSettings();
-      fetchLikedUsers();
-    }
-  }, [user]);
 
-  useEffect(() => {
-    if (datingEnabled) {
-      fetchProfiles();
-      fetchMatches();
-    }
-  }, [datingEnabled]);
 
-  const fetchDatingSettings = async () => {
+  const fetchDatingSettings = useCallback(async () => {
     if (!user) return;
 
     const { data } = await supabase
@@ -96,9 +84,9 @@ const Dating = () => {
         dating_bio: data.dating_bio || "",
       });
     }
-  };
+  }, [user]);
 
-  const fetchLikedUsers = async () => {
+  const fetchLikedUsers = useCallback(async () => {
     if (!user) return;
 
     const { data } = await supabase
@@ -109,9 +97,9 @@ const Dating = () => {
     if (data) {
       setLikedUsers(new Set(data.map(d => d.liked_user_id)));
     }
-  };
+  }, [user]);
 
-  const fetchProfiles = async () => {
+  const fetchProfiles = useCallback(async () => {
     if (!user) return;
 
     const { data, error } = await supabase
@@ -145,9 +133,9 @@ const Dating = () => {
       .sort((a, b) => b.score - a.score);
 
     setProfiles(filtered);
-  };
+  }, [user, likedUsers]);
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     if (!user) return;
 
     // First get all matches
@@ -200,7 +188,21 @@ const Dating = () => {
     });
 
     setMatches(matchesWithProfiles);
-  };
+  }, [user]);
+  useEffect(() => {
+    if (datingEnabled) {
+      fetchProfiles();
+      fetchMatches();
+    }
+  }, [datingEnabled, fetchProfiles, fetchMatches]);
+
+  useEffect(() => {
+    if (user) {
+      fetchDatingSettings();
+      fetchLikedUsers();
+    }
+  }, [user, fetchDatingSettings, fetchLikedUsers]);
+
 
   const updateDatingSettings = async () => {
     if (!user) return;
@@ -412,7 +414,7 @@ const Dating = () => {
             {currentProfile ? (
               <SwipeCard
                 ref={swipeCardRef}
-                profile={{ ...currentProfile, score: (currentProfile as any).score }}
+                profile={currentProfile}
                 onLike={() => handleLike(currentProfile.id)}
                 onSkip={handleSkip}
               />

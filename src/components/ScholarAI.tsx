@@ -157,7 +157,7 @@ const ScholarAI = () => {
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
-                    content += textContent.items.map((item: any) => item.str).join(' ') + '\n';
+                    content += textContent.items.map((item) => (item as { str: string }).str).join(' ') + '\n';
                 }
             } else {
                 content = await file.text();
@@ -228,7 +228,7 @@ const ScholarAI = () => {
             setMessages(prev => [...prev, { role: 'model', text: `Study guide for "${fullGuide.title}" generated successfully! Use the tabs to explore.` }]);
             setActiveTab('summary');
             toast({ title: "Study Guide Ready", description: "Click the tabs to view flashcards, quiz, and schedule." });
-        } catch (error: any) {
+        } catch (error) {
             console.error("Generation error:", error);
             toast({ title: "Generation Failed", description: "AI could not generate the structured guide. Check console.", variant: "destructive" });
         } finally {
@@ -253,8 +253,8 @@ const ScholarAI = () => {
             const result = await model.generateContent(prompt);
             const response = await result.response;
             setMessages(prev => [...prev, { role: 'model', text: response.text() }]);
-        } catch (error: any) {
-            toast({ title: "AI Error", description: error.message || "Failed to respond.", variant: "destructive" });
+        } catch (error) {
+            toast({ title: "AI Error", description: error instanceof Error ? error.message : "Failed to respond.", variant: "destructive" });
         } finally {
             setIsLoading(false);
         }

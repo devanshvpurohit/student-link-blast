@@ -118,10 +118,10 @@ const Onboarding = () => {
             });
 
             navigate('/');
-        } catch (error: any) {
+        } catch (error) {
             toast({
                 title: "Error",
-                description: error.message,
+                description: error instanceof Error ? error.message : "Something went wrong",
                 variant: "destructive"
             });
         } finally {

@@ -14,13 +14,14 @@ export const getLoginUrl = (clientId: string) => {
     return `${AUTH_ENDPOINT}?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=${RESPONSE_TYPE}&scope=${encodeURIComponent(SCOPES.join(' '))}`;
 };
 
-export const getTokenFromUrl = () => {
+export const getTokenFromUrl = (): Record<string, string> => {
     return window.location.hash
         .substring(1)
         .split('&')
-        .reduce((initial: any, item) => {
-            let parts = item.split('=');
+        .filter(Boolean)
+        .reduce((initial, item) => {
+            const parts = item.split('=');
             initial[parts[0]] = decodeURIComponent(parts[1]);
             return initial;
-        }, {});
+        }, {} as Record<string, string>);
 };

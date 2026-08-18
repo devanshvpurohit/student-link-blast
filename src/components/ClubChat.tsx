@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Send, Timer, Eye, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,7 +15,7 @@ interface ClubMessage {
   content: string;
   message_type: string;
   expires_at: string;
-  viewed_by: any; // JSONB array from database
+  viewed_by: Json[]; // JSONB array from database
   created_at: string;
   sender_id: string;
   profiles: {
@@ -36,17 +37,6 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetchMessages();
-    setupRealtimeSubscription();
-    
-    // Set up interval to check for expired messages
-    const interval = setInterval(removeExpiredMessages, 1000);
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, [clubId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -56,7 +46,7 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     const { data, error } = await supabase
       .from('club_messages')
       .select(`
@@ -77,9 +67,9 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
       }));
       setMessages(processedMessages);
     }
-  };
+  }, [clubId]);
 
-  const setupRealtimeSubscription = () => {
+  const setupRealtimeSubscription = useCallback(() => {
     const channel = supabase
       .channel('club-messages')
       .on(
@@ -120,14 +110,26 @@ const ClubChat = ({ clubId, clubName }: ClubChatProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  };
+  }, [clubId, fetchMessages]);
 
-  const removeExpiredMessages = () => {
+  const removeExpiredMessages = useCallback(() => {
     const now = new Date();
     setMessages(prev => 
       prev.filter(msg => new Date(msg.expires_at) > now)
     );
-  };
+  }, []);
+  useEffect(() => {
+    fetchMessages();
+    setupRealtimeSubscription();
+    
+    // Set up interval to check for expired messages
+    const interval = setInterval(removeExpiredMessages, 1000);
+    
+    return () => {
+      clearInterval(interval);
+    };
+  }, [clubId, fetchMessages, setupRealtimeSubscription, removeExpiredMessages]);
+
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;

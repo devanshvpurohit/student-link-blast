@@ -174,10 +174,10 @@ DO $$ BEGIN
       CREATE POLICY "Users can view same-college dating matches"
         ON public.dating_matches FOR SELECT
         USING (
-          (auth.uid() = user_id OR auth.uid() = matched_user_id)
+          (auth.uid() = user_id OR auth.uid() = liked_user_id)
           AND EXISTS (
             SELECT 1 FROM public.profiles p
-            WHERE p.id = (CASE WHEN auth.uid() = user_id THEN matched_user_id ELSE user_id END)
+            WHERE p.id = (CASE WHEN auth.uid() = user_id THEN liked_user_id ELSE user_id END)
               AND p.college = public.get_my_college()
           )
         )

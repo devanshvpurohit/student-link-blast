@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,19 +31,10 @@ const Connect = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [user]);
 
-  const loadData = async () => {
-    setIsLoading(true);
-    await Promise.all([fetchProfiles(), fetchConnections()]);
-    setIsLoading(false);
-  };
 
-  const fetchProfiles = async () => {
+
+  const fetchProfiles = useCallback(async () => {
     // Get IDs of people I'm already connected with or have pending requests with
     if (!user) return;
 
@@ -69,9 +60,9 @@ const Connect = () => {
       setProfiles(data || []);
       setFilteredProfiles(data || []);
     }
-  };
+  }, [user]);
 
-  const fetchConnections = async () => {
+  const fetchConnections = useCallback(async () => {
     if (!user) return;
 
     // Fetch connections where I am requester OR receiver
@@ -93,14 +84,25 @@ const Connect = () => {
       console.error('Error fetching connections:', error);
     } else {
       // Transform to a simpler structure for the UI
-      const transformedData = (data || []).map((conn: any) => ({
+      const transformedData = (data || []).map((conn) => ({
         ...conn,
         // If I sent the request, show the receiver. If I received it, show the requester.
         profiles: conn.requester_id === user.id ? conn.receiver : conn.requester
       }));
       setConnections(transformedData);
     }
-  };
+  }, [user]);
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    await Promise.all([fetchProfiles(), fetchConnections()]);
+    setIsLoading(false);
+  }, [fetchProfiles, fetchConnections]);
+  useEffect(() => {
+    if (user) {
+      loadData();
+    }
+  }, [user, loadData]);
 
   const sendConnectionRequest = async (receiverId: string) => {
     if (!user) return;

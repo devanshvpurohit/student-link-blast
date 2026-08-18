@@ -58,7 +58,7 @@ const Events = () => {
       description: newEvent.description,
       location: newEvent.location,
       start_time: new Date(newEvent.start_time).toISOString(),
-      event_type: newEvent.event_type as any, // Cast for simplicity logic
+      event_type: newEvent.event_type as "academic" | "social" | "sports" | "club" | "career" | "other",
       created_by: user.id
     });
 

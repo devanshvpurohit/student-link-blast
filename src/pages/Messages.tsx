@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,39 +66,9 @@ const Messages = () => {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (user) {
-      fetchConnections();
-    }
-  }, [user]);
 
-  useEffect(() => {
-    if (selectedConnection) {
-      fetchMessages(selectedConnection.id);
-      
-      const subscription = supabase
-        .channel('messages')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages',
-            filter: `connection_id=eq.${selectedConnection.id}`,
-          },
-          (payload) => {
-            fetchMessages(selectedConnection.id);
-          }
-        )
-        .subscribe();
 
-      return () => {
-        subscription.unsubscribe();
-      };
-    }
-  }, [selectedConnection]);
-
-  const fetchConnections = async () => {
+  const fetchConnections = useCallback(async () => {
     const { data, error } = await supabase
       .from('connections')
       .select(`
@@ -141,9 +111,9 @@ const Messages = () => {
     );
 
     setConnections(connectionsWithMessages);
-  };
+  }, [user, toast]);
 
-  const fetchMessages = async (connectionId: string) => {
+  const fetchMessages = useCallback(async (connectionId: string) => {
     const { data, error } = await supabase
       .from('messages')
       .select(`
@@ -162,7 +132,39 @@ const Messages = () => {
     } else {
       setMessages(data || []);
     }
-  };
+  }, [toast]);
+  useEffect(() => {
+    if (selectedConnection) {
+      fetchMessages(selectedConnection.id);
+      
+      const subscription = supabase
+        .channel('messages')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `connection_id=eq.${selectedConnection.id}`,
+          },
+          (payload) => {
+            fetchMessages(selectedConnection.id);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [selectedConnection, fetchMessages]);
+
+  useEffect(() => {
+    if (user) {
+      fetchConnections();
+    }
+  }, [user, fetchConnections]);
+
 
   const sendMessage = async () => {
     if ((!newMessage.trim() && !selectedImage) || !selectedConnection || !user) return;

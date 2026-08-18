@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,12 +57,8 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchMembers();
-    fetchUserRole();
-  }, [club.id]);
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     const { data, error } = await supabase
       .from('club_members')
       .select(`
@@ -80,9 +76,9 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
       setMembers(approved);
       setPendingMembers(pending);
     }
-  };
+  }, [club.id]);
 
-  const fetchUserRole = async () => {
+  const fetchUserRole = useCallback(async () => {
     const { data } = await supabase
       .from('club_members')
       .select('role')
@@ -94,10 +90,15 @@ const ClubDashboard = ({ club, onClose, onOpenChat }: ClubDashboardProps) => {
     if (data) {
       setUserRole(data.role);
     }
-  };
+  }, [club.id, user]);
+  useEffect(() => {
+    fetchMembers();
+    fetchUserRole();
+  }, [fetchMembers, fetchUserRole]);
+
 
   const handleMemberAction = async (memberId: string, action: 'approve' | 'reject' | 'remove') => {
-    let updateData: any = {};
+    let updateData: { status?: 'approved' | 'rejected' } = {};
     
     if (action === 'approve') {
       updateData = { status: 'approved' };

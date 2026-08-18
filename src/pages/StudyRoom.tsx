@@ -17,7 +17,6 @@ const StudyRoom = () => {
 
     useEffect(() => {
         const hash = getTokenFromUrl();
-        // @ts-ignore
         const _token = hash.access_token;
         if (_token) {
             setSpotifyToken(_token);
